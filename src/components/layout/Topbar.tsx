@@ -13,12 +13,21 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { Link } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-export const Topbar: React.FC = () => {
+interface TopbarProps {
+  children?: React.ReactNode;
+}
+
+export const Topbar: React.FC<TopbarProps> = ({ children }) => {
+  const isMobile = useIsMobile();
+  
   return (
-    <header className="h-16 border-b border-slate-200 bg-white px-6 flex items-center justify-between">
-      <div className="flex items-center md:w-72">
-        <div className="relative w-full max-w-md">
+    <header className="h-16 border-b border-slate-200 bg-white px-4 md:px-6 flex items-center justify-between shadow-sm">
+      <div className="flex items-center">
+        {children}
+        
+        <div className={`relative ${isMobile ? 'w-full max-w-[180px]' : 'w-full max-w-md'}`}>
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
           <Input
             type="search"
@@ -28,13 +37,15 @@ export const Topbar: React.FC = () => {
         </div>
       </div>
       
-      <div className="flex items-center gap-4">
-        <Button variant="default" size="sm" asChild>
-          <Link to="/missions/create">
-            <Plus size={16} className="mr-1" />
-            New Mission
-          </Link>
-        </Button>
+      <div className="flex items-center gap-2 md:gap-4">
+        {!isMobile && (
+          <Button variant="default" size="sm" asChild>
+            <Link to="/missions/create">
+              <Plus size={16} className="mr-1" />
+              New Mission
+            </Link>
+          </Button>
+        )}
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -43,7 +54,7 @@ export const Topbar: React.FC = () => {
               <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
+          <DropdownMenuContent align="end" className="w-[280px] md:w-80">
             <DropdownMenuLabel>Notifications</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem className="flex flex-col items-start gap-1 cursor-pointer">

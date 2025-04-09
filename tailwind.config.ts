@@ -70,6 +70,10 @@ export default {
 				  'ocean-blue': '#0EA5E9'
 				}
 			},
+			screens: {
+				'xs': '360px',
+				'sm-md': '480px',
+			},
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',

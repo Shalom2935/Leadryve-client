@@ -8,14 +8,17 @@ import {
   Settings, 
   Menu, 
   X,
-  LogOut 
+  LogOut,
+  Plus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export const Sidebar: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const isMobile = useIsMobile();
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
@@ -40,15 +43,20 @@ export const Sidebar: React.FC = () => {
     );
   };
 
+  // Show the full sidebar on mobile, never collapsed
+  const sidebarWidth = isMobile 
+    ? "w-[250px]" 
+    : (collapsed ? "w-[70px]" : "w-[250px]");
+
   return (
     <aside 
       className={cn(
-        "bg-white border-r border-slate-200 transition-all duration-300 flex flex-col z-20",
-        collapsed ? "w-[70px]" : "w-[250px]"
+        "bg-white border-r border-slate-200 transition-all duration-300 flex flex-col z-20 h-screen",
+        sidebarWidth
       )}
     >
       <div className="p-4 border-b border-slate-200 flex items-center justify-between">
-        {!collapsed && (
+        {(!collapsed || isMobile) && (
           <Link to="/" className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-md bg-deepinsight-purple flex items-center justify-center">
               <span className="text-white font-semibold">DI</span>
@@ -56,30 +64,42 @@ export const Sidebar: React.FC = () => {
             <span className="font-bold text-lg">DeepInsight</span>
           </Link>
         )}
-        {collapsed && (
+        {collapsed && !isMobile && (
           <div className="h-8 w-8 rounded-md bg-deepinsight-purple flex items-center justify-center mx-auto">
             <span className="text-white font-semibold">DI</span>
           </div>
         )}
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={toggleSidebar} 
-          className="text-slate-500"
-        >
-          {collapsed ? <Menu size={20} /> : <X size={20} />}
-        </Button>
+        {!isMobile && (
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={toggleSidebar} 
+            className="text-slate-500"
+          >
+            {collapsed ? <Menu size={20} /> : <X size={20} />}
+          </Button>
+        )}
       </div>
 
-      <div className="flex-1 px-3 py-6 flex flex-col gap-2">
+      <div className="flex-1 px-3 py-6 flex flex-col gap-2 overflow-y-auto">
         <NavItem to="/" icon={LayoutDashboard} label="Dashboard" />
         <NavItem to="/missions" icon={Target} label="Missions" />
         <NavItem to="/leads" icon={Users} label="Leads" />
         <NavItem to="/settings" icon={Settings} label="Settings" />
+        
+        {isMobile && (
+          <Link 
+            to="/missions/create"
+            className="mt-4 flex items-center gap-2 bg-deepinsight-purple text-white px-3 py-2 rounded-lg text-sm font-medium"
+          >
+            <Plus size={18} />
+            <span>New Mission</span>
+          </Link>
+        )}
       </div>
 
       <div className="border-t border-slate-200 p-4">
-        {!collapsed && (
+        {(!collapsed || isMobile) && (
           <div className="text-xs text-slate-500 mb-4">
             <p>Pro Plan</p>
             <div className="mt-2 bg-slate-200 h-2 rounded-full">
@@ -90,11 +110,11 @@ export const Sidebar: React.FC = () => {
         )}
         <Button 
           variant="ghost" 
-          size={collapsed ? "icon" : "sm"} 
+          size={collapsed && !isMobile ? "icon" : "sm"} 
           className="text-slate-600 w-full"
         >
           <LogOut size={16} />
-          {!collapsed && <span className="ml-2">Log out</span>}
+          {(!collapsed || isMobile) && <span className="ml-2">Log out</span>}
         </Button>
       </div>
     </aside>
