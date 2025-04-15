@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { 
@@ -59,16 +60,15 @@ const Leads = () => {
   const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
   
   const isMobile = useIsMobile();
-  const isTabletOrMobile = window.innerWidth < 1024; // Consider screens under 1024px as tablet or mobile
   
-  // If mobile or tablet, default to card view
+  // If mobile, default to card view
   React.useEffect(() => {
-    if (isTabletOrMobile) {
+    if (isMobile) {
       setViewMode('card');
     } else {
       setViewMode('table');
     }
-  }, [isTabletOrMobile]);
+  }, [isMobile]);
   
   const leads = [
     {
@@ -237,7 +237,7 @@ const Leads = () => {
                   variant="outline" 
                   size="sm"
                   onClick={toggleViewMode}
-                  className="hidden lg:flex" // Only show on large screens (1024px+)
+                  className="hidden sm:flex" // Only show on desktop
                 >
                   {viewMode === 'table' ? (
                     <><LayoutGrid className="h-4 w-4 mr-1" /> Cards</>
@@ -280,7 +280,7 @@ const Leads = () => {
               <div className="text-sm text-slate-500">Showing {leads.length} leads</div>
             </div>
             
-            {/* Card view for small screens and tablets */}
+            {/* Card view for small screens */}
             {viewMode === 'card' && (
               <div className="p-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
