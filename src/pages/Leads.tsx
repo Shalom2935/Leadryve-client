@@ -5,7 +5,8 @@ import {
   Card, 
   CardContent, 
   CardHeader, 
-  CardTitle 
+  CardTitle,
+  CardFooter
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -16,7 +17,9 @@ import {
   Linkedin, 
   MessageSquare, 
   Download, 
-  MoreHorizontal 
+  MoreHorizontal,
+  LayoutList,
+  LayoutGrid 
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -46,12 +49,117 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+// Lead type definition
+interface Lead {
+  id: number;
+  companyName: string;
+  contactName: string;
+  title: string;
+  industry: string;
+  location: string;
+  score: number;
+  contactMethods: string[];
+  status: string;
+  mission: string;
+}
+
+// LeadCard component for mobile and tablet views
+const LeadCard: React.FC<{ 
+  lead: Lead; 
+  getScoreClass: (score: number) => string;
+  getStatusBadge: (status: string) => React.ReactNode;
+  openContactModal: (lead: Lead) => void;
+}> = ({ lead, getScoreClass, getStatusBadge, openContactModal }) => {
+  return (
+    <Card className="mb-4">
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle className="text-lg">{lead.companyName}</CardTitle>
+            <p className="text-sm text-slate-500">{lead.contactName}, {lead.title}</p>
+          </div>
+          <Badge className={getScoreClass(lead.score)}>
+            {lead.score}
+          </Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="pb-2">
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <div>
+            <p className="font-medium">Mission</p>
+            <p className="text-slate-500">{lead.mission}</p>
+          </div>
+          <div>
+            <p className="font-medium">Status</p>
+            <div>{getStatusBadge(lead.status)}</div>
+          </div>
+          <div>
+            <p className="font-medium">Location</p>
+            <p className="text-slate-500">{lead.location}</p>
+          </div>
+          <div>
+            <p className="font-medium">Contact</p>
+            <div className="flex gap-1 mt-1">
+              {lead.contactMethods.includes('email') && (
+                <Mail size={16} className="text-slate-600" />
+              )}
+              {lead.contactMethods.includes('phone') && (
+                <Phone size={16} className="text-slate-600" />
+              )}
+              {lead.contactMethods.includes('linkedin') && (
+                <Linkedin size={16} className="text-slate-600" />
+              )}
+            </div>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="pt-2 flex justify-between">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => openContactModal(lead)}
+          disabled={lead.status === 'contacted' || lead.status === 'qualified'}
+        >
+          Contact
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem>View Details</DropdownMenuItem>
+            <DropdownMenuItem>Add Notes</DropdownMenuItem>
+            <DropdownMenuItem>Mark as Qualified</DropdownMenuItem>
+            <DropdownMenuItem className="text-red-600">Remove Lead</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </CardFooter>
+    </Card>
+  );
+};
 
 const Leads = () => {
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
   const [sendNow, setSendNow] = useState(true);
   const [message, setMessage] = useState('');
+  const [viewMode, setViewMode] = useState<'table' | 'card'>('table');
+  const isMobile = useIsMobile();
+  
+  // Determine if we're on tablet or mobile (under 1024px)
+  const isSmallScreen = window.innerWidth < 1024;
+  
+  // Use card view by default on small screens
+  React.useEffect(() => {
+    if (isSmallScreen) {
+      setViewMode('card');
+    }
+  }, [isSmallScreen]);
   
   const leads = [
     {
@@ -178,10 +286,14 @@ const Leads = () => {
     });
   };
 
+  const toggleViewMode = () => {
+    setViewMode(viewMode === 'table' ? 'card' : 'table');
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">All Leads</h1>
             <p className="text-muted-foreground">
@@ -189,6 +301,21 @@ const Leads = () => {
             </p>
           </div>
           <div className="flex gap-2">
+            {!isSmallScreen && (
+              <Button variant="outline" onClick={toggleViewMode}>
+                {viewMode === 'table' ? (
+                  <>
+                    <LayoutGrid className="h-4 w-4 mr-1" /> 
+                    Card View
+                  </>
+                ) : (
+                  <>
+                    <LayoutList className="h-4 w-4 mr-1" /> 
+                    Table View
+                  </>
+                )}
+              </Button>
+            )}
             <Button variant="outline">
               <Download className="h-4 w-4 mr-1" /> Export
             </Button>
@@ -219,7 +346,7 @@ const Leads = () => {
           </CardHeader>
           <CardContent className="p-0">
             <div className="border-b border-slate-200 px-4 py-3 bg-slate-50 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 flex-wrap">
                 <Select defaultValue="all">
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Mission" />
@@ -249,80 +376,102 @@ const Leads = () => {
               <div className="text-sm text-slate-500">Showing {leads.length} leads</div>
             </div>
             
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Company / Contact</TableHead>
-                  <TableHead>Mission</TableHead>
-                  <TableHead>Score</TableHead>
-                  <TableHead>Contact Methods</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            {/* Card View (for tablet and mobile) */}
+            {(viewMode === 'card' || isSmallScreen) && (
+              <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {leads.map((lead) => (
-                  <TableRow key={lead.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{lead.companyName}</p>
-                        <div className="text-sm text-slate-500">
-                          {lead.contactName}, {lead.title}
-                        </div>
-                        <div className="text-xs text-slate-400">
-                          {lead.location}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{lead.mission}</TableCell>
-                    <TableCell>
-                      <Badge className={getScoreClass(lead.score)}>
-                        {lead.score}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        {lead.contactMethods.includes('email') && (
-                          <Mail size={16} className="text-slate-600" />
-                        )}
-                        {lead.contactMethods.includes('phone') && (
-                          <Phone size={16} className="text-slate-600" />
-                        )}
-                        {lead.contactMethods.includes('linkedin') && (
-                          <Linkedin size={16} className="text-slate-600" />
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{getStatusBadge(lead.status)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => openContactModal(lead)}
-                          disabled={lead.status === 'contacted' || lead.status === 'qualified'}
-                        >
-                          Contact
-                        </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                            <DropdownMenuItem>Add Notes</DropdownMenuItem>
-                            <DropdownMenuItem>Mark as Qualified</DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">Remove Lead</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                  <LeadCard 
+                    key={lead.id}
+                    lead={lead}
+                    getScoreClass={getScoreClass}
+                    getStatusBadge={getStatusBadge}
+                    openContactModal={openContactModal}
+                  />
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            )}
+            
+            {/* Table View (for desktop only) */}
+            {viewMode === 'table' && !isSmallScreen && (
+              <ScrollArea className="max-w-full">
+                <div className="min-w-[1000px]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Company / Contact</TableHead>
+                        <TableHead>Mission</TableHead>
+                        <TableHead>Score</TableHead>
+                        <TableHead>Contact Methods</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {leads.map((lead) => (
+                        <TableRow key={lead.id}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{lead.companyName}</p>
+                              <div className="text-sm text-slate-500">
+                                {lead.contactName}, {lead.title}
+                              </div>
+                              <div className="text-xs text-slate-400">
+                                {lead.location}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{lead.mission}</TableCell>
+                          <TableCell>
+                            <Badge className={getScoreClass(lead.score)}>
+                              {lead.score}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-1">
+                              {lead.contactMethods.includes('email') && (
+                                <Mail size={16} className="text-slate-600" />
+                              )}
+                              {lead.contactMethods.includes('phone') && (
+                                <Phone size={16} className="text-slate-600" />
+                              )}
+                              {lead.contactMethods.includes('linkedin') && (
+                                <Linkedin size={16} className="text-slate-600" />
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>{getStatusBadge(lead.status)}</TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => openContactModal(lead)}
+                                disabled={lead.status === 'contacted' || lead.status === 'qualified'}
+                              >
+                                Contact
+                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem>View Details</DropdownMenuItem>
+                                  <DropdownMenuItem>Add Notes</DropdownMenuItem>
+                                  <DropdownMenuItem>Mark as Qualified</DropdownMenuItem>
+                                  <DropdownMenuItem className="text-red-600">Remove Lead</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </ScrollArea>
+            )}
           </CardContent>
         </Card>
 

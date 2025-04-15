@@ -20,9 +20,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex relative">
-      {/* Sidebar - hidden on mobile by default */}
+      {/* Sidebar - fixed position on all devices */}
       <div 
-        className={`${isMobile ? 'fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out' : ''} ${
+        className={`${isMobile ? 'fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out' : 'fixed inset-y-0 left-0 z-30'} ${
           isMobile && !showMobileSidebar ? '-translate-x-full' : 'translate-x-0'
         }`}
       >
@@ -37,7 +37,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         />
       )}
       
-      <div className="flex-1 flex flex-col">
+      <div className={`flex-1 flex flex-col ${!isMobile ? 'ml-[250px]' : ''}`}>
         <Topbar>
           {isMobile && (
             <Button 
