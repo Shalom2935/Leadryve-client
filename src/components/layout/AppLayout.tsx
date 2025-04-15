@@ -5,6 +5,7 @@ import { Topbar } from './Topbar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -37,7 +38,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         />
       )}
       
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col w-full">
         <Topbar>
           {isMobile && (
             <Button 
@@ -51,9 +52,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           )}
         </Topbar>
         
-        <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto animate-fade-in">
-          {children}
-        </main>
+        <ScrollArea className="flex-1">
+          <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-x-hidden animate-fade-in">
+            {children}
+          </main>
+        </ScrollArea>
       </div>
     </div>
   );

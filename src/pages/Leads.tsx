@@ -46,6 +46,7 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const Leads = () => {
   const [contactModalOpen, setContactModalOpen] = useState(false);
@@ -181,18 +182,18 @@ const Leads = () => {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight">All Leads</h1>
             <p className="text-muted-foreground">
               Manage and contact your potential clients
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline">
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" className="whitespace-nowrap">
               <Download className="h-4 w-4 mr-1" /> Export
             </Button>
-            <Button>
+            <Button size="sm" className="whitespace-nowrap">
               <MessageSquare className="h-4 w-4 mr-1" /> Bulk Contact
             </Button>
           </div>
@@ -202,7 +203,7 @@ const Leads = () => {
           <CardHeader className="pb-3">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <CardTitle>Lead Management</CardTitle>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                 <div className="relative w-full sm:w-64">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
                   <Input
@@ -211,7 +212,7 @@ const Leads = () => {
                     className="pl-8"
                   />
                 </div>
-                <Button variant="outline">
+                <Button variant="outline" size="sm">
                   <Filter className="h-4 w-4 mr-1" /> Filter
                 </Button>
               </div>
@@ -219,9 +220,9 @@ const Leads = () => {
           </CardHeader>
           <CardContent className="p-0">
             <div className="border-b border-slate-200 px-4 py-3 bg-slate-50 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
                 <Select defaultValue="all">
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Mission" />
                   </SelectTrigger>
                   <SelectContent>
@@ -233,7 +234,7 @@ const Leads = () => {
                 </Select>
                 
                 <Select defaultValue="all">
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full sm:w-[180px]">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -249,80 +250,83 @@ const Leads = () => {
               <div className="text-sm text-slate-500">Showing {leads.length} leads</div>
             </div>
             
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Company / Contact</TableHead>
-                  <TableHead>Mission</TableHead>
-                  <TableHead>Score</TableHead>
-                  <TableHead>Contact Methods</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {leads.map((lead) => (
-                  <TableRow key={lead.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{lead.companyName}</p>
-                        <div className="text-sm text-slate-500">
-                          {lead.contactName}, {lead.title}
-                        </div>
-                        <div className="text-xs text-slate-400">
-                          {lead.location}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{lead.mission}</TableCell>
-                    <TableCell>
-                      <Badge className={getScoreClass(lead.score)}>
-                        {lead.score}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        {lead.contactMethods.includes('email') && (
-                          <Mail size={16} className="text-slate-600" />
-                        )}
-                        {lead.contactMethods.includes('phone') && (
-                          <Phone size={16} className="text-slate-600" />
-                        )}
-                        {lead.contactMethods.includes('linkedin') && (
-                          <Linkedin size={16} className="text-slate-600" />
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{getStatusBadge(lead.status)}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => openContactModal(lead)}
-                          disabled={lead.status === 'contacted' || lead.status === 'qualified'}
-                        >
-                          Contact
-                        </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>View Details</DropdownMenuItem>
-                            <DropdownMenuItem>Add Notes</DropdownMenuItem>
-                            <DropdownMenuItem>Mark as Qualified</DropdownMenuItem>
-                            <DropdownMenuItem className="text-red-600">Remove Lead</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="min-w-[220px]">Company / Contact</TableHead>
+                    <TableHead className="min-w-[180px]">Mission</TableHead>
+                    <TableHead className="min-w-[80px]">Score</TableHead>
+                    <TableHead className="min-w-[100px]">Contact Methods</TableHead>
+                    <TableHead className="min-w-[100px]">Status</TableHead>
+                    <TableHead className="text-right min-w-[140px]">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {leads.map((lead) => (
+                    <TableRow key={lead.id}>
+                      <TableCell className="font-medium">
+                        <div>
+                          <p className="font-medium">{lead.companyName}</p>
+                          <div className="text-sm text-slate-500">
+                            {lead.contactName}, {lead.title}
+                          </div>
+                          <div className="text-xs text-slate-400">
+                            {lead.location}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{lead.mission}</TableCell>
+                      <TableCell>
+                        <Badge className={getScoreClass(lead.score)}>
+                          {lead.score}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          {lead.contactMethods.includes('email') && (
+                            <Mail size={16} className="text-slate-600" />
+                          )}
+                          {lead.contactMethods.includes('phone') && (
+                            <Phone size={16} className="text-slate-600" />
+                          )}
+                          {lead.contactMethods.includes('linkedin') && (
+                            <Linkedin size={16} className="text-slate-600" />
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>{getStatusBadge(lead.status)}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => openContactModal(lead)}
+                            disabled={lead.status === 'contacted' || lead.status === 'qualified'}
+                            className="whitespace-nowrap"
+                          >
+                            Contact
+                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem>View Details</DropdownMenuItem>
+                              <DropdownMenuItem>Add Notes</DropdownMenuItem>
+                              <DropdownMenuItem>Mark as Qualified</DropdownMenuItem>
+                              <DropdownMenuItem className="text-red-600">Remove Lead</DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
 
