@@ -51,7 +51,7 @@ export const Sidebar: React.FC = () => {
   return (
     <aside 
       className={cn(
-        "bg-white border-r border-slate-200 transition-all duration-300 flex flex-col z-20 h-screen",
+        "bg-white border-r border-slate-200 transition-all duration-300 flex flex-col z-20 h-screen fixed",
         sidebarWidth
       )}
     >

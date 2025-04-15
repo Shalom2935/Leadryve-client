@@ -36,7 +36,7 @@ const LeadCard: React.FC<LeadCardProps> = ({
   getStatusBadge 
 }) => {
   return (
-    <Card className="mb-4">
+    <Card className="mb-4 hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-3">
           <div>

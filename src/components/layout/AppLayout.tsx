@@ -38,7 +38,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         />
       )}
       
-      <div className="flex-1 flex flex-col w-full">
+      <div className={`flex-1 flex flex-col w-full ${!isMobile ? 'ml-[70px] lg:ml-[250px]' : ''}`}>
         <Topbar>
           {isMobile && (
             <Button 
