@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { Bell, Plus, Search } from 'lucide-react';
+import { Bell, Plus, Search, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
@@ -17,14 +16,20 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TopbarProps {
   children?: React.ReactNode;
+    onToggleSidebar?: () => void;
 }
 
-export const Topbar: React.FC<TopbarProps> = ({ children }) => {
+export const Topbar: React.FC<TopbarProps> = ({ children, onToggleSidebar }) => {
   const isMobile = useIsMobile();
   
   return (
     <header className="h-16 border-b border-slate-200 bg-white px-4 md:px-6 flex items-center justify-between shadow-sm">
       <div className="flex items-center">
+        {isMobile && onToggleSidebar &&(
+          <Button variant="ghost" size="icon" className="mr-2" onClick={onToggleSidebar} name="menu">
+            <Menu className="w-5 h-5" />
+          </Button>
+        )}
         {children}
         
         <div className={`relative ${isMobile ? 'w-full max-w-[180px]' : 'w-full max-w-md'}`}>
