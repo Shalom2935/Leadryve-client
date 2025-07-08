@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +10,8 @@ import CreateMission from "./pages/CreateMission";
 import Leads from "./pages/Leads";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import AuthProfile from "./pages/AuthProfile";
+import Auth from "./pages/Auth";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/auth" element={<Auth />} />
+          {/* Auth route above dashboard routes */}
+          <Route path="/auth/profile" element={<AuthProfile />} />
           <Route path="/" element={<Index />} />
           <Route path="/missions" element={<Missions />} />
           <Route path="/missions/create" element={<CreateMission />} />

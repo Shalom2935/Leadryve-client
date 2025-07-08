@@ -71,7 +71,7 @@ export const Topbar: React.FC<TopbarProps> = ({ children, onToggleSidebar }) => 
               <p className="text-xs text-slate-500">3 hours ago</p>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-center text-sm text-deepinsight-purple cursor-pointer">
+            <DropdownMenuItem className="text-center text-leadryve-purple cursor-pointer">
               View all notifications
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -82,7 +82,7 @@ export const Topbar: React.FC<TopbarProps> = ({ children, onToggleSidebar }) => 
             <Button variant="ghost" className="relative h-8 w-8 rounded-full" size="icon">
               <Avatar className="h-8 w-8">
                 <AvatarImage src="" alt="User" />
-                <AvatarFallback className="bg-deepinsight-purple text-white">JS</AvatarFallback>
+                <AvatarFallback className="bg-leadryve-purple text-white">JS</AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>

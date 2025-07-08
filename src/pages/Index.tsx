@@ -93,7 +93,7 @@ const Dashboard = () => {
       <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back to DeepInsight.</p>
+          <p className="text-muted-foreground">Welcome back to Leadryve.</p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -143,7 +143,7 @@ const Dashboard = () => {
                 <div className="mb-4">
                   <div className="flex justify-between text-sm mb-1">
                     <span>Progress</span>
-                    <span className="text-deepinsight-purple font-medium">{mission.progress}%</span>
+                    <span className="text-leadryve-purple font-medium">{mission.progress}%</span>
                   </div>
                   <Progress value={mission.progress} className="h-2" />
                 </div>
@@ -159,7 +159,7 @@ const Dashboard = () => {
                   </div>
                 </div>
                 
-                <div className="flex justify-end text-deepinsight-purple hover:underline text-sm">
+                <div className="flex justify-end text-leadryve-purple hover:underline text-sm">
                   View details <ChevronRight size={16} />
                 </div>
               </Link>

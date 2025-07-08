@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -63,7 +62,7 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				deepinsight: {
+				leadryve: {
 				  purple: '#6C63FF',
 				  'light-purple': '#E5DEFF',
 				  blue: '#33C3F0',

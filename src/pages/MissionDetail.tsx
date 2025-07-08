@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
@@ -189,28 +188,28 @@ const MissionDetail = () => {
             <CardContent className="space-y-4">
               <div className="flex flex-col gap-3">
                 <div className="flex items-start gap-2">
-                  <Target size={18} className="text-deepinsight-purple mt-0.5" />
+                  <Target size={18} className="text-leadryve-purple mt-0.5" />
                   <div>
                     <p className="font-medium">Target Industry</p>
                     <p className="text-sm">{mission.target.industry}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
-                  <MapPin size={18} className="text-deepinsight-purple mt-0.5" />
+                  <MapPin size={18} className="text-leadryve-purple mt-0.5" />
                   <div>
                     <p className="font-medium">Location</p>
                     <p className="text-sm">{mission.target.location}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
-                  <Users size={18} className="text-deepinsight-purple mt-0.5" />
+                  <Users size={18} className="text-leadryve-purple mt-0.5" />
                   <div>
                     <p className="font-medium">Client Type</p>
                     <p className="text-sm">{mission.target.clientType}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
-                  <Clock size={18} className="text-deepinsight-purple mt-0.5" />
+                  <Clock size={18} className="text-leadryve-purple mt-0.5" />
                   <div>
                     <p className="font-medium">Timeline</p>
                     <p className="text-sm">Started on {mission.startDate}</p>
@@ -229,7 +228,7 @@ const MissionDetail = () => {
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span>Leads Found</span>
-                  <span className="text-deepinsight-purple font-medium">
+                  <span className="text-leadryve-purple font-medium">
                     {mission.stats.leadsFound}/{mission.target.leadTarget}
                   </span>
                 </div>

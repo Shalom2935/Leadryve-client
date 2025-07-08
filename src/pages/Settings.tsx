@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { 
@@ -101,7 +100,7 @@ const Settings = () => {
                 <div className="flex items-center gap-4">
                   <Avatar className="h-16 w-16">
                     <AvatarImage src="" alt="John Smith" />
-                    <AvatarFallback className="bg-deepinsight-purple text-white text-lg">JS</AvatarFallback>
+                    <AvatarFallback className="bg-leadryve-purple text-white text-lg">JS</AvatarFallback>
                   </Avatar>
                   <div>
                     <Button variant="outline" size="sm">

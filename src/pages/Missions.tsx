@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
@@ -77,7 +76,7 @@ const MissionCard: React.FC<{
         <div>
           <div className="flex justify-between text-sm mb-1">
             <span>Progress</span>
-            <span className="text-deepinsight-purple font-medium">{mission.progress}%</span>
+            <span className="text-leadryve-purple font-medium">{mission.progress}%</span>
           </div>
           <Progress value={mission.progress} className="h-2" />
         </div>
@@ -101,7 +100,7 @@ const MissionCard: React.FC<{
         </div>
         
         <div className="flex justify-end mt-2">
-          <Button variant="ghost" asChild className="text-deepinsight-purple hover:text-deepinsight-purple hover:bg-deepinsight-light-purple p-0 h-8">
+          <Button variant="ghost" asChild className="text-leadryve-purple hover:text-leadryve-purple hover:bg-leadryve-light-purple p-0 h-8">
             <Link to={`/missions/${mission.id}`}>
               View details <ChevronRight size={16} />
             </Link>
@@ -129,7 +128,7 @@ const Missions = () => {
   const missions = [
     { 
       id: 1, 
-      name: 'Tech SaaS in California', 
+      name: 'Tech SaaS in Yaounde', 
       status: 'active', 
       progress: 65, 
       leads: 87, 
@@ -140,7 +139,7 @@ const Missions = () => {
     },
     { 
       id: 2, 
-      name: 'UK Startups', 
+      name: 'Digital Marketing Agencies in Cameroon', 
       status: 'completed', 
       progress: 100, 
       leads: 120, 
@@ -151,7 +150,7 @@ const Missions = () => {
     },
     { 
       id: 3, 
-      name: 'Healthcare Providers NYC', 
+      name: 'Healthcare Providers', 
       status: 'draft', 
       progress: 0, 
       leads: 0, 
@@ -173,7 +172,7 @@ const Missions = () => {
     },
     { 
       id: 5, 
-      name: 'Educational Institutions Canada', 
+      name: 'Educational Institutions Maroua', 
       status: 'active', 
       progress: 78, 
       leads: 94, 
@@ -322,7 +321,7 @@ const Missions = () => {
                 <div className="mb-4 px-4">
                   <div className="flex justify-between text-sm mb-1">
                     <span>Progress</span>
-                    <span className="text-deepinsight-purple font-medium">{mission.progress}%</span>
+                    <span className="text-leadryve-purple font-medium">{mission.progress}%</span>
                   </div>
                   <Progress value={mission.progress} className="h-2" />
                 </div>
@@ -346,7 +345,7 @@ const Missions = () => {
                 </div>
                 
                 <div className="flex justify-end mt-4 px-4 pb-4">
-                  <Button variant="ghost" asChild className="text-deepinsight-purple hover:text-deepinsight-purple hover:bg-deepinsight-light-purple p-0 h-8">
+                  <Button variant="ghost" asChild className="text-leadryve-purple hover:text-leadryve-purple hover:bg-leadryve-light-purple p-0 h-8">
                     <Link to={`/missions/${mission.id}`}>
                       View details <ChevronRight size={16} />
                     </Link>

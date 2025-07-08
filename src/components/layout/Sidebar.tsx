@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
@@ -33,8 +32,8 @@ export const Sidebar: React.FC = () => {
         className={cn(
           "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
           isActive 
-            ? "bg-deepinsight-purple text-white" 
-            : "text-slate-600 hover:bg-deepinsight-light-purple hover:text-deepinsight-purple"
+            ? "bg-leadryve-purple text-white" 
+            : "text-slate-600 hover:bg-leadryve-light-purple hover:text-leadryve-purple"
         )}
       >
         <Icon size={20} />
@@ -58,15 +57,15 @@ export const Sidebar: React.FC = () => {
       <div className="p-4 border-b border-slate-200 flex items-center justify-between">
         {(!collapsed || isMobile) && (
           <Link to="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-md bg-deepinsight-purple flex items-center justify-center">
-              <span className="text-white font-semibold">DI</span>
+            <div className="h-8 w-8 rounded-md bg-leadryve-purple flex items-center justify-center">
+              <span className="text-white font-semibold">LR</span>
             </div>
-            <span className="font-bold text-lg">DeepInsight</span>
+            <span className="font-bold text-lg">Leadryve</span>
           </Link>
         )}
         {collapsed && !isMobile && (
-          <div className="h-8 w-8 rounded-md bg-deepinsight-purple flex items-center justify-center mx-auto">
-            <span className="text-white font-semibold">DI</span>
+          <div className="h-8 w-8 rounded-md bg-leadryve-purple flex items-center justify-center mx-auto">
+            <span className="text-white font-semibold">LR</span>
           </div>
         )}
         {!isMobile && (
@@ -90,7 +89,7 @@ export const Sidebar: React.FC = () => {
         {isMobile && (
           <Link 
             to="/missions/create"
-            className="mt-4 flex items-center gap-2 bg-deepinsight-purple text-white px-3 py-2 rounded-lg text-sm font-medium"
+            className="mt-4 flex items-center gap-2 bg-leadryve-purple text-white px-3 py-2 rounded-lg text-sm font-medium"
           >
             <Plus size={18} />
             <span>New Mission</span>
@@ -103,7 +102,7 @@ export const Sidebar: React.FC = () => {
           <div className="text-xs text-slate-500 mb-4">
             <p>Pro Plan</p>
             <div className="mt-2 bg-slate-200 h-2 rounded-full">
-              <div className="bg-deepinsight-purple h-full rounded-full w-[65%]"></div>
+              <div className="bg-leadryve-purple h-full rounded-full w-[65%]"></div>
             </div>
             <p className="mt-1">435/650 leads used</p>
           </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { 
@@ -272,14 +271,14 @@ const CreateMission = () => {
               <div className="space-y-4">
                 <div className="bg-slate-50 p-4 rounded-lg space-y-3">
                   <div className="flex items-start gap-2">
-                    <Target size={18} className="text-deepinsight-purple mt-0.5" />
+                    <Target size={18} className="text-leadryve-purple mt-0.5" />
                     <div>
                       <p className="font-medium">Mission Name</p>
                       <p className="text-sm">{formData.missionName || "Not specified"}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Users size={18} className="text-deepinsight-purple mt-0.5" />
+                    <Users size={18} className="text-leadryve-purple mt-0.5" />
                     <div>
                       <p className="font-medium">Target</p>
                       <p className="text-sm">
@@ -289,14 +288,14 @@ const CreateMission = () => {
                     </div>
                   </div>
                   <div className="flex items-start gap-2">
-                    <Globe size={18} className="text-deepinsight-purple mt-0.5" />
+                    <Globe size={18} className="text-leadryve-purple mt-0.5" />
                     <div>
                       <p className="font-medium">Location</p>
                       <p className="text-sm">{formData.targetLocation || "Not specified"}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-2">
-                    <MessageSquare size={18} className="text-deepinsight-purple mt-0.5" />
+                    <MessageSquare size={18} className="text-leadryve-purple mt-0.5" />
                     <div>
                       <p className="font-medium">Contact Methods</p>
                       <p className="text-sm">
@@ -354,7 +353,7 @@ const CreateMission = () => {
                   Next <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
               ) : (
-                <Button type="submit" className="bg-deepinsight-purple hover:bg-deepinsight-purple/90">
+                <Button type="submit" className="bg-leadryve-purple hover:bg-leadryve-purple/90">
                   <CheckCircle className="mr-1 h-4 w-4" /> Launch Mission
                 </Button>
               )}
