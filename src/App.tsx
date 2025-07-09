@@ -12,6 +12,8 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import AuthProfile from "./pages/AuthProfile";
 import Auth from "./pages/Auth";
+import ConfirmEmail from "./pages/ConfirmEmail";
+import { RequireAuth, AuthProvider } from "@/hooks/useAuth";
 
 const queryClient = new QueryClient();
 
@@ -21,18 +23,20 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/auth" element={<Auth />} />
-          {/* Auth route above dashboard routes */}
-          <Route path="/auth/profile" element={<AuthProfile />} />
-          <Route path="/" element={<Index />} />
-          <Route path="/missions" element={<Missions />} />
-          <Route path="/missions/create" element={<CreateMission />} />
-          <Route path="/missions/:id" element={<MissionDetail />} />
-          <Route path="/leads" element={<Leads />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/profile" element={<AuthProfile />} />
+            <Route path="/auth/confirm-email" element={<ConfirmEmail />} />
+            <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
+            <Route path="/missions" element={<RequireAuth><Missions /></RequireAuth>} />
+            <Route path="/missions/create" element={<RequireAuth><CreateMission /></RequireAuth>} />
+            <Route path="/missions/:id" element={<RequireAuth><MissionDetail /></RequireAuth>} />
+            <Route path="/leads" element={<RequireAuth><Leads /></RequireAuth>} />
+            <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
+            <Route path="*" element={<RequireAuth><NotFound /></RequireAuth>} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

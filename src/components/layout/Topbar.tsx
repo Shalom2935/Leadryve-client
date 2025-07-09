@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/hooks/useAuth';
 
 interface TopbarProps {
   children?: React.ReactNode;
@@ -21,6 +22,7 @@ interface TopbarProps {
 
 export const Topbar: React.FC<TopbarProps> = ({ children, onToggleSidebar }) => {
   const isMobile = useIsMobile();
+  const { logout } = useAuth();
   
   return (
     <header className="h-16 border-b border-slate-200 bg-white px-4 md:px-6 flex items-center justify-between shadow-sm">
@@ -104,7 +106,7 @@ export const Topbar: React.FC<TopbarProps> = ({ children, onToggleSidebar }) => 
               Billing
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={logout}>
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>

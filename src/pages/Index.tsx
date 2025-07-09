@@ -15,8 +15,11 @@ import {
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 const Dashboard = () => {
+  const { logout } = useAuth();
+
   const missions = [
     { 
       id: 1, 
@@ -91,9 +94,12 @@ const Dashboard = () => {
   return (
     <AppLayout>
       <div className="space-y-8">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back to Leadryve.</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+            <p className="text-muted-foreground">Welcome back to Leadryve.</p>
+          </div>
+          <Button variant="outline" onClick={logout}>Se déconnecter</Button>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

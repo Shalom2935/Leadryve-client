@@ -13,11 +13,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/hooks/useAuth';
 
 export const Sidebar: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const isMobile = useIsMobile();
+  const { logout } = useAuth();
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
@@ -111,6 +113,7 @@ export const Sidebar: React.FC = () => {
           variant="ghost" 
           size={collapsed && !isMobile ? "icon" : "sm"} 
           className="text-slate-600 w-full"
+          onClick={logout}
         >
           <LogOut size={16} />
           {(!collapsed || isMobile) && <span className="ml-2">Log out</span>}
