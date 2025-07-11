@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { 
@@ -44,82 +44,65 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { toast } from 'sonner';
+import { missionDetailSchema } from '@/lib/schemas';
+
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 const MissionDetail = () => {
   const { id } = useParams();
+  const [mission, setMission] = useState(null);
+  const [leads, setLeads] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
   const [sendNow, setSendNow] = useState(true);
   const [message, setMessage] = useState('');
 
-  const mission = {
-    id: 1,
-    name: 'Tech SaaS in California',
-    status: 'active',
-    progress: 65,
-    target: {
-      industry: 'Technology',
-      location: 'California, USA',
-      clientType: 'B2B',
-      leadTarget: 150,
-    },
-    stats: {
-      leadsFound: 87,
-      contacted: 42,
-      responded: 18,
-      qualified: 12,
-    },
-    startDate: 'Apr 2, 2025',
-    lastUpdated: '2 hours ago',
-  };
+  useEffect(() => {
+    const fetchMission = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/missions/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) throw new Error('Erreur lors du chargement de la mission');
+        const data = await res.json();
+        const parsed = missionDetailSchema.safeParse(data);
+        if (!parsed.success) throw new Error('Format de mission invalide');
+        setMission(parsed.data);
+      } catch (e: any) {
+        setError(e.message || 'Erreur inconnue');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMission();
+  }, [id]);
 
-  const leads = [
-    {
-      id: 1,
-      companyName: 'TechFlow Solutions',
-      industry: 'Software',
-      location: 'San Francisco, CA',
-      score: 95,
-      contactMethods: ['email', 'linkedin', 'phone'],
-      status: 'pending',
-    },
-    {
-      id: 2,
-      companyName: 'DataSphere Inc.',
-      industry: 'Data Analytics',
-      location: 'San Jose, CA',
-      score: 87,
-      contactMethods: ['email', 'linkedin'],
-      status: 'contacted',
-    },
-    {
-      id: 3,
-      companyName: 'CloudNest',
-      industry: 'Cloud Computing',
-      location: 'Los Angeles, CA',
-      score: 76,
-      contactMethods: ['email'],
-      status: 'responded',
-    },
-    {
-      id: 4,
-      companyName: 'SecureNet Solutions',
-      industry: 'Cybersecurity',
-      location: 'Palo Alto, CA',
-      score: 92,
-      contactMethods: ['email', 'phone'],
-      status: 'qualified',
-    },
-    {
-      id: 5,
-      companyName: 'InnovateTech',
-      industry: 'Software',
-      location: 'Oakland, CA',
-      score: 65,
-      contactMethods: ['linkedin'],
-      status: 'pending',
-    },
-  ];
+  useEffect(() => {
+    const fetchLeads = async () => {
+      if (!id) return;
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/missions/${id}/leads`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) throw new Error('Erreur lors du chargement des leads');
+        const data = await res.json();
+        setLeads(data);
+      } catch (e: any) {
+        // Optionally handle error
+      }
+    };
+    fetchLeads();
+  }, [id]);
 
   const getScoreClass = (score: number) => {
     if (score >= 80) return 'lead-score-high';
@@ -151,13 +134,22 @@ const MissionDetail = () => {
   const handleSendMessage = () => {
     toast.success(`Message ${sendNow ? 'sent' : 'scheduled'} to ${selectedLead.companyName}!`);
     setContactModalOpen(false);
-    
-    // Update the lead status
-    // In a real app, this would update the state or call an API
     toast(`Lead status updated to "Contacted"`, {
       description: selectedLead.companyName,
     });
   };
+
+  if (loading) {
+    return (
+      <AppLayout><div className="p-8 text-center">Chargement de la mission...</div></AppLayout>
+    );
+  }
+  if (error) {
+    return <AppLayout><div className="p-8 text-center text-red-600">{error}</div></AppLayout>;
+  }
+  if (!mission) {
+    return <AppLayout><div className="p-8 text-center">Aucune mission trouvée.</div></AppLayout>;
+  }
 
   return (
     <AppLayout>
@@ -166,9 +158,9 @@ const MissionDetail = () => {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold tracking-tight">{mission.name}</h1>
-              <Badge className="bg-green-100 text-green-800">Active</Badge>
+              <Badge className="bg-green-100 text-green-800">{mission.status}</Badge>
             </div>
-            <p className="text-muted-foreground">Mission ID: {id}</p>
+            <p className="text-muted-foreground">Mission ID: {mission.id}</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline">
@@ -251,7 +243,7 @@ const MissionDetail = () => {
                 <div className="bg-slate-50 p-3 rounded-lg">
                   <p className="text-sm text-slate-500">Response Rate</p>
                   <p className="text-xl font-semibold">
-                    {Math.round((mission.stats.responded / mission.stats.contacted) * 100) || 0}%
+                    {Math.round((mission.stats.responded / (mission.stats.contacted || 1)) * 100) || 0}%
                   </p>
                 </div>
               </div>
@@ -285,13 +277,15 @@ const MissionDetail = () => {
                     <TableHead>Company</TableHead>
                     <TableHead>Location</TableHead>
                     <TableHead>Score</TableHead>
-                    <TableHead>Contact Methods</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Reason</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {leads.map((lead) => (
+                  {leads.map((lead: any) => (
                     <TableRow key={lead.id}>
                       <TableCell className="font-medium">{lead.companyName}</TableCell>
                       <TableCell>{lead.location}</TableCell>
@@ -301,18 +295,24 @@ const MissionDetail = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex gap-1">
-                          {lead.contactMethods.includes('email') && (
-                            <Mail size={16} className="text-slate-600" />
-                          )}
-                          {lead.contactMethods.includes('phone') && (
-                            <Phone size={16} className="text-slate-600" />
-                          )}
-                          {lead.contactMethods.includes('linkedin') && (
-                            <Linkedin size={16} className="text-slate-600" />
-                          )}
-                        </div>
+                        {lead.email ? (
+                          <span className="flex items-center gap-1"><Mail size={16} className="text-slate-600" />{lead.email}</span>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
                       </TableCell>
+                      <TableCell>
+                        {lead.phone && lead.phone.length > 0 ? (
+                          <span className="flex flex-col gap-1">
+                            {lead.phone.map((p: string, idx: number) => (
+                              <span key={idx} className="flex items-center gap-1"><Phone size={16} className="text-slate-600" />{p}</span>
+                            ))}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>{lead.reason || <span className="text-slate-400">—</span>}</TableCell>
                       <TableCell>{getStatusBadge(lead.status)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">

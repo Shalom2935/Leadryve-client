@@ -29,3 +29,97 @@ export const loginSchema = z.object({
   email: z.string().email('Email valide requis'),
   password: z.string().min(1, 'Mot de passe requis'),
 });
+
+export const dashboardSummarySchema = z.object({
+  total_leads: z.number(),
+  total_emails: z.number(),
+  recent_missions: z.array(
+    z.object({
+    id: z.number(),
+    name: z.string(),
+    progress: z.number().min(0).max(100),
+    status: z.enum(['active', 'completed', 'draft', 'in_progress']),
+    leads_found: z.number(),
+    leads_requested: z.number(),
+    started_ago: z.number(),
+  }))
+});
+
+export const missionSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  progress: z.number().min(0).max(100),
+  status: z.enum(['active', 'completed', 'draft', 'in_progress']),
+  target_location: z.string(),
+  target_sector: z.string(),
+  lead_count: z.number(),
+  notes: z.any().optional(),
+  created_at: z.string(), // ISO date
+});
+
+export const dashboardMissionsSchema = z.array(missionSchema);
+
+export const missionDetailStatsSchema = z.object({
+  leadsFound: z.number(),
+  contacted: z.number(),
+  responded: z.number(),
+  qualified: z.number(),
+});
+
+export const missionDetailSchema = missionSchema.extend({
+  description: z.string().optional(),
+  startDate: z.string(),
+  lastUpdated: z.string(),
+  stats: missionDetailStatsSchema,
+  target: z.object({
+    industry: z.string(),
+    location: z.string(),
+    clientType: z.string(),
+    leadTarget: z.number(),
+  })
+  // leads supprimé : récupéré par un endpoint séparé
+});
+
+// Schéma pour la liste des leads d'une mission
+export const missionLeadSchema = z.object({
+  id: z.number(),
+  companyName: z.string(),
+  industry: z.string(),
+  location: z.string(),
+  score: z.number(),
+  email: z.string().email().optional(),
+  phone: z.array(z.string()).optional(),
+  reason: z.string().optional(),
+  status: z.string(),
+});
+
+export const missionLeadsListSchema = z.array(missionLeadSchema);
+
+export const profileSchema = z.object({
+  name: z.string().min(1, 'Nom requis'),
+  companyName: z.string().min(1, 'Nom entreprise requis'),
+  role: z.string().min(1, 'Rôle requis'),
+  services: z.array(z.string().min(1, 'Service requis')).min(1, 'Au moins un service'),
+  regions: z.array(z.string().min(1, 'Zone requise')).min(1, 'Au moins une zone'),
+  employees: z.string().min(1, 'Plage requise'),
+  openingHours: z.object({
+    monday: z.string(),
+    tuesday: z.string(),
+    wednesday: z.string(),
+    thursday: z.string(),
+    friday: z.string(),
+    saturday: z.string(),
+    sunday: z.string(),
+  }),
+  address: z.string().optional(),
+  email: z.string().email('Email valide requis'),
+  phone: z.string().optional(),
+  website: z.string().optional(),
+  linkedin: z.string().optional(),
+  facebook: z.string().optional(),
+  instagram: z.string().optional(),
+  x: z.string().optional(),
+  pitch: z.string().optional(),
+});
+
+export type ProfileFormFields = z.infer<typeof profileSchema>;
