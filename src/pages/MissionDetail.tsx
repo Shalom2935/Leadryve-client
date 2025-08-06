@@ -29,6 +29,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -44,7 +45,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { missionDetailSchema } from '@/lib/schemas';
+import { missionSchema } from '@/lib/schemas';
+import { missionLeadsListSchema } from '@/lib/schemas';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -58,6 +60,7 @@ const MissionDetail = () => {
   const [selectedLead, setSelectedLead] = useState<any>(null);
   const [sendNow, setSendNow] = useState(true);
   const [message, setMessage] = useState('');
+  const [reasonOpenId, setReasonOpenId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchMission = async () => {
@@ -72,7 +75,7 @@ const MissionDetail = () => {
         });
         if (!res.ok) throw new Error('Erreur lors du chargement de la mission');
         const data = await res.json();
-        const parsed = missionDetailSchema.safeParse(data);
+        const parsed = missionSchema.safeParse(data);
         if (!parsed.success) throw new Error('Format de mission invalide');
         setMission(parsed.data);
       } catch (e: any) {
@@ -96,7 +99,10 @@ const MissionDetail = () => {
         });
         if (!res.ok) throw new Error('Erreur lors du chargement des leads');
         const data = await res.json();
-        setLeads(data);
+        const parsed = missionLeadsListSchema.safeParse(data.items);
+        if (!parsed.success) throw new Error('Format de données inattendu');
+        setLeads(data.items);
+        console.log(leads)
       } catch (e: any) {
         // Optionally handle error
       }
@@ -110,32 +116,30 @@ const MissionDetail = () => {
     return 'lead-score-low';
   };
 
+  
+
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'pending':
-        return <Badge variant="outline" className="border-slate-200">Pending</Badge>;
-      case 'contacted':
-        return <Badge className="bg-blue-100 text-blue-800">Contacted</Badge>;
-      case 'responded':
-        return <Badge className="bg-purple-100 text-purple-800">Responded</Badge>;
-      case 'qualified':
-        return <Badge className="bg-green-100 text-green-800">Qualified</Badge>;
+      case 'in_progress':
+        return <Badge className="bg-blue-100 text-blue-800">In Progress</Badge>;
+      case 'completed':
+        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
       default:
-        return null;
+        return <Badge variant="outline">Unknown</Badge>;
     }
   };
 
   const openContactModal = (lead: any) => {
     setSelectedLead(lead);
-    setMessage(`Hi, I came across ${lead.companyName} and I'm impressed with your work in the ${lead.industry} industry. I'd like to discuss how our solution might be valuable for your business.`);
+    setMessage(`Hi, I came across ${lead.company_name} and I'd like to discuss how our solution might be valuable for your business.`);
     setContactModalOpen(true);
   };
 
   const handleSendMessage = () => {
-    toast.success(`Message ${sendNow ? 'sent' : 'scheduled'} to ${selectedLead.companyName}!`);
+    toast.success(`Message ${sendNow ? 'sent' : 'scheduled'} to ${selectedLead.company_name}!`);
     setContactModalOpen(false);
     toast(`Lead status updated to "Contacted"`, {
-      description: selectedLead.companyName,
+      description: selectedLead.company_name,
     });
   };
 
@@ -162,89 +166,51 @@ const MissionDetail = () => {
             </div>
             <p className="text-muted-foreground">Mission ID: {mission.id}</p>
           </div>
-          <div className="flex gap-2">
+          {/* <div className="flex gap-2">
             <Button variant="outline">
               <Download className="h-4 w-4 mr-1" /> Export
             </Button>
             <Button>
               Edit Mission
             </Button>
-          </div>
+          </div> */}
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Mission Overview</CardTitle>
+              <CardTitle>Mission Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-col gap-3">
                 <div className="flex items-start gap-2">
-                  <Target size={18} className="text-leadryve-purple mt-0.5" />
-                  <div>
-                    <p className="font-medium">Target Industry</p>
-                    <p className="text-sm">{mission.target.industry}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
                   <MapPin size={18} className="text-leadryve-purple mt-0.5" />
                   <div>
                     <p className="font-medium">Location</p>
-                    <p className="text-sm">{mission.target.location}</p>
+                    <p className="text-sm">{mission.target_location}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <Target size={18} className="text-leadryve-purple mt-0.5" />
+                  <div>
+                    <p className="font-medium">Target Industry</p>
+                    <p className="text-sm">{mission.target_sector}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
                   <Users size={18} className="text-leadryve-purple mt-0.5" />
                   <div>
-                    <p className="font-medium">Client Type</p>
-                    <p className="text-sm">{mission.target.clientType}</p>
+                    <p className="font-medium">Leads Requested</p>
+                    <p className="text-sm">{mission.lead_count}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
                   <Clock size={18} className="text-leadryve-purple mt-0.5" />
                   <div>
-                    <p className="font-medium">Timeline</p>
-                    <p className="text-sm">Started on {mission.startDate}</p>
-                    <p className="text-xs text-slate-500">Last updated {mission.lastUpdated}</p>
+                    <p className="font-medium">Progress</p>
+                    <Progress value={mission.progress} className="h-2" />
+                    <p className="text-sm">{mission.progress}% Completed</p>
                   </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Progress</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Leads Found</span>
-                  <span className="text-leadryve-purple font-medium">
-                    {mission.stats.leadsFound}/{mission.target.leadTarget}
-                  </span>
-                </div>
-                <Progress value={(mission.stats.leadsFound / mission.target.leadTarget) * 100} className="h-2" />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4 mt-4">
-                <div className="bg-slate-50 p-3 rounded-lg">
-                  <p className="text-sm text-slate-500">Contacted</p>
-                  <p className="text-xl font-semibold">{mission.stats.contacted}</p>
-                </div>
-                <div className="bg-slate-50 p-3 rounded-lg">
-                  <p className="text-sm text-slate-500">Responded</p>
-                  <p className="text-xl font-semibold">{mission.stats.responded}</p>
-                </div>
-                <div className="bg-slate-50 p-3 rounded-lg">
-                  <p className="text-sm text-slate-500">Qualified</p>
-                  <p className="text-xl font-semibold">{mission.stats.qualified}</p>
-                </div>
-                <div className="bg-slate-50 p-3 rounded-lg">
-                  <p className="text-sm text-slate-500">Response Rate</p>
-                  <p className="text-xl font-semibold">
-                    {Math.round((mission.stats.responded / (mission.stats.contacted || 1)) * 100) || 0}%
-                  </p>
                 </div>
               </div>
             </CardContent>
@@ -256,6 +222,85 @@ const MissionDetail = () => {
             <h2 className="text-xl font-semibold">Leads</h2>
             <div className="flex gap-2">
               <div className="relative w-64">
+        {reasonOpenId !== null && (
+          <div
+            onClick={() => setReasonOpenId(null)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100vw',
+              height: '100vh',
+              background: 'rgba(40, 0, 80, 0.10)',
+              zIndex: 9999,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <div
+              style={{
+                background: '#fff',
+                borderRadius: 20,
+                padding: '32px 28px',
+                maxWidth: 520,
+                width: '95%',
+                maxHeight: '80vh',
+                overflowY: 'auto',
+                border: '1.5px solid #c3b6e6',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              <h3 style={{
+                fontSize: '1.25rem',
+                fontWeight: 700,
+                marginBottom: 18,
+                color: '#6c3fc7',
+                letterSpacing: '0.01em',
+                textAlign: 'center',
+              }}>Raison du lead</h3>
+              <div style={{
+                width: '100%',
+                marginBottom: 12,
+              }}>
+                {(() => {
+                  const selectedLead = leads.find(l => l.id === reasonOpenId);
+                  return selectedLead?.reason?.split('\n').map((paragraph: string, idx: number) => (
+                    <p key={idx} style={{
+                      marginBottom: 10,
+                      color: '#3d246b',
+                      fontSize: '1rem',
+                      lineHeight: 1.6,
+                      background: '#f3edff',
+                      borderRadius: 8,
+                      padding: '10px 14px',
+                      wordBreak: 'break-word',
+                    }} className="whitespace-pre-line">{paragraph}</p>
+                  ));
+                })()}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                style={{
+                  marginTop: 8,
+                  background: '#e9e3fa',
+                  color: '#6c3fc7',
+                  borderRadius: 8,
+                  border: '1px solid #c3b6e6',
+                  fontWeight: 500,
+                  padding: '6px 18px',
+                }}
+                onClick={() => setReasonOpenId(null)}
+              >
+                Fermer
+              </Button>
+            </div>
+          </div>
+        )}
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
                 <Input
                   type="search"
@@ -280,15 +325,14 @@ const MissionDetail = () => {
                     <TableHead>Email</TableHead>
                     <TableHead>Phone</TableHead>
                     <TableHead>Reason</TableHead>
-                    <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {leads.map((lead: any) => (
+                  {leads.map((lead) => (
                     <TableRow key={lead.id}>
-                      <TableCell className="font-medium">{lead.companyName}</TableCell>
-                      <TableCell>{lead.location}</TableCell>
+                      <TableCell className="font-medium">{lead.company_name}</TableCell>
+                      <TableCell>{lead.address}</TableCell>
                       <TableCell>
                         <Badge className={getScoreClass(lead.score)}>
                           {lead.score}
@@ -302,25 +346,32 @@ const MissionDetail = () => {
                         )}
                       </TableCell>
                       <TableCell>
-                        {lead.phone && lead.phone.length > 0 ? (
-                          <span className="flex flex-col gap-1">
-                            {lead.phone.map((p: string, idx: number) => (
-                              <span key={idx} className="flex items-center gap-1"><Phone size={16} className="text-slate-600" />{p}</span>
-                            ))}
-                          </span>
+                        {lead.phone ? (
+                          <span className="flex items-center gap-1"><Phone size={16} className="text-slate-600" />{lead.phone}</span>
                         ) : (
                           <span className="text-slate-400">—</span>
                         )}
                       </TableCell>
-                      <TableCell>{lead.reason || <span className="text-slate-400">—</span>}</TableCell>
-                      <TableCell>{getStatusBadge(lead.status)}</TableCell>
+                      <TableCell>
+                          {lead.reason ? (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setReasonOpenId(lead.id)}
+                              className="underline text-blue-600"
+                            >
+                              Voir la raison
+                            </Button>
+                          ) : (
+                            <span className="text-slate-400">—</span>
+                          )}
+                                                </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button 
                             variant="outline" 
                             size="sm"
                             onClick={() => openContactModal(lead)}
-                            disabled={lead.status === 'contacted' || lead.status === 'qualified'}
                           >
                             Contact
                           </Button>

@@ -34,14 +34,14 @@ export const Topbar: React.FC<TopbarProps> = ({ children, onToggleSidebar }) => 
         )}
         {children}
         
-        <div className={`relative ${isMobile ? 'w-full max-w-[180px]' : 'w-full max-w-md'}`}>
+        {/* <div className={`relative ${isMobile ? 'w-full max-w-[180px]' : 'w-full max-w-md'}`}>
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
           <Input
             type="search"
             placeholder="Search..."
             className="w-full pl-8 bg-slate-50 border-slate-200"
           />
-        </div>
+        </div> */}
       </div>
       
       <div className="flex items-center gap-2 md:gap-4">
@@ -54,7 +54,7 @@ export const Topbar: React.FC<TopbarProps> = ({ children, onToggleSidebar }) => 
           </Button>
         )}
         
-        <DropdownMenu>
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
               <Bell size={20} />
@@ -77,7 +77,7 @@ export const Topbar: React.FC<TopbarProps> = ({ children, onToggleSidebar }) => 
               View all notifications
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -102,9 +102,9 @@ export const Topbar: React.FC<TopbarProps> = ({ children, onToggleSidebar }) => 
             <DropdownMenuItem>
               Account settings
             </DropdownMenuItem>
-            <DropdownMenuItem>
+            {/* <DropdownMenuItem>
               Billing
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>
               Log out

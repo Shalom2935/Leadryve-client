@@ -85,7 +85,7 @@ export const Sidebar: React.FC = () => {
       <div className="flex-1 px-3 py-6 flex flex-col gap-2 overflow-y-auto">
         <NavItem to="/" icon={LayoutDashboard} label="Dashboard" />
         <NavItem to="/missions" icon={Target} label="Missions" />
-        <NavItem to="/leads" icon={Users} label="Leads" />
+        {/* <NavItem to="/leads" icon={Users} label="Leads" /> */}
         <NavItem to="/settings" icon={Settings} label="Settings" />
         
         {isMobile && (
@@ -100,7 +100,7 @@ export const Sidebar: React.FC = () => {
       </div>
 
       <div className="border-t border-slate-200 p-4">
-        {(!collapsed || isMobile) && (
+        {/* {(!collapsed || isMobile) && (
           <div className="text-xs text-slate-500 mb-4">
             <p>Pro Plan</p>
             <div className="mt-2 bg-slate-200 h-2 rounded-full">
@@ -108,7 +108,7 @@ export const Sidebar: React.FC = () => {
             </div>
             <p className="mt-1">435/650 leads used</p>
           </div>
-        )}
+        )} */}
         <Button 
           variant="ghost" 
           size={collapsed && !isMobile ? "icon" : "sm"} 

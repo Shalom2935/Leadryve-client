@@ -7,7 +7,7 @@ interface Profile {
   companyName: string;
   role: string;
   services: string[];
-  regions: string[];
+  geo_coverage: string[];
   employees: string;
   openingHours: {
     monday: { start: string; end: string };
@@ -21,11 +21,13 @@ interface Profile {
   address: string;
   email: string;
   phone: string;
-  website?: string;
-  linkedin?: string;
-  facebook?: string;
-  instagram?: string;
-  x?: string;
+  social_links: {  
+    website?: string;
+    linkedin?: string;
+    facebook?: string;
+    instagram?: string;
+    x?: string;
+  };
   pitch?: string;
 }
 
@@ -39,7 +41,10 @@ const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { token, logout, isAuthenticated } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(() => {
+    const storedProfile = localStorage.getItem('userProfile');
+    return storedProfile ? JSON.parse(storedProfile) : null;
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchProfile = useCallback(async () => {
@@ -51,7 +56,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setIsLoading(true);
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE || '/api'}/profile`, {
-        method: 'POST',
+        method: 'GET',
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -65,6 +70,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
 
       const profileData = await response.json();
+      localStorage.setItem('userProfile', JSON.stringify(profileData));
       setProfile(profileData);
     } catch (error) {
       console.error(error);
@@ -79,6 +85,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
       fetchProfile();
     } else {
       setProfile(null);
+      localStorage.removeItem('userProfile');
       setIsLoading(false);
     }
   }, [isAuthenticated, fetchProfile]);

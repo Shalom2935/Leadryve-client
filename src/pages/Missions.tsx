@@ -144,8 +144,6 @@ const Missions = () => {
         });
         if (!res.ok) throw new Error('Erreur lors de la récupération des missions');
         const data = await res.json();
-        console.log(data)
-        // data est { count, item: [missions] }
         const parsed = dashboardMissionsSchema.safeParse(data.items);
         if (!parsed.success) {
           console.error('Zod validation failed for missions:', parsed.error, data.items);

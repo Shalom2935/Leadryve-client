@@ -45,7 +45,7 @@ const AppRoutes = () => (
     <Route path="/missions" element={<RequireAuth><RequireProfile><Missions /></RequireProfile></RequireAuth>} />
     <Route path="/missions/create" element={<RequireAuth><RequireProfile><CreateMission /></RequireProfile></RequireAuth>} />
     <Route path="/missions/:id" element={<RequireAuth><RequireProfile><MissionDetail /></RequireProfile></RequireAuth>} />
-    <Route path="/leads" element={<RequireAuth><RequireProfile><Leads /></RequireProfile></RequireAuth>} />
+    {/* <Route path="/leads" element={<RequireAuth><RequireProfile><Leads /></RequireProfile></RequireAuth>} /> */}
     <Route path="/settings" element={<RequireAuth><RequireProfile><Settings /></RequireProfile></RequireAuth>} />
     <Route path="*" element={<RequireAuth><RequireProfile><NotFound /></RequireProfile></RequireAuth>} />
   </Routes>

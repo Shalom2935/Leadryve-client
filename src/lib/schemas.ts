@@ -48,49 +48,29 @@ export const dashboardSummarySchema = z.object({
 export const missionSchema = z.object({
   id: z.number(),
   name: z.string(),
-  progress: z.number().min(0).max(100),
-  status: z.enum(['active', 'completed', 'draft', 'in_progress']),
   target_location: z.string(),
   target_sector: z.string(),
   lead_count: z.number(),
   notes: z.any().optional(),
   created_at: z.string(), // ISO date
+  progress: z.number().min(0).max(100),
+  status: z.enum(['completed', 'in_progress']),
 });
 
 export const dashboardMissionsSchema = z.array(missionSchema);
 
-export const missionDetailStatsSchema = z.object({
-  leadsFound: z.number(),
-  contacted: z.number(),
-  responded: z.number(),
-  qualified: z.number(),
-});
 
-export const missionDetailSchema = missionSchema.extend({
-  description: z.string().optional(),
-  startDate: z.string(),
-  lastUpdated: z.string(),
-  stats: missionDetailStatsSchema,
-  target: z.object({
-    industry: z.string(),
-    location: z.string(),
-    clientType: z.string(),
-    leadTarget: z.number(),
-  })
-  // leads supprimé : récupéré par un endpoint séparé
-});
 
 // Schéma pour la liste des leads d'une mission
 export const missionLeadSchema = z.object({
   id: z.number(),
-  companyName: z.string(),
-  industry: z.string(),
-  location: z.string(),
+  company_name: z.string(),
+  address: z.string().optional(),
   score: z.number(),
   email: z.string().email().optional(),
-  phone: z.array(z.string()).optional(),
+  phone: z.string().optional(),
   reason: z.string().optional(),
-  status: z.string(),
+  created_at: z.string(), // ISO date
 });
 
 export const missionLeadsListSchema = z.array(missionLeadSchema);
@@ -115,11 +95,13 @@ export const profileSchema = z.object({
   email: z.string().email('Email valide requis'),
   phone: z.string().optional(),
   website: z.string().optional(),
-  linkedin: z.string().optional(),
-  facebook: z.string().optional(),
-  instagram: z.string().optional(),
-  x: z.string().optional(),
-  pitch: z.string().optional(),
+  socialNetworks: z.object({
+    linkedin: z.string().optional(),
+    facebook: z.string().optional(),
+    instagram: z.string().optional(),
+    x: z.string().optional(),
+    pitch: z.string().optional(),
+  }), 
 });
 
 export type ProfileFormFields = z.infer<typeof profileSchema>;

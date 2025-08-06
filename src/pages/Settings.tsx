@@ -72,7 +72,7 @@ const Settings = () => {
         </div>
 
         <Tabs defaultValue="account">
-          <TabsList className="grid w-full max-w-md grid-cols-3">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
             <TabsTrigger value="account">
               <UserCircle className="h-4 w-4 mr-2" />
               Account
@@ -81,10 +81,10 @@ const Settings = () => {
               <CreditCard className="h-4 w-4 mr-2" />
               Plan & Usage
             </TabsTrigger>
-            <TabsTrigger value="preferences">
+            {/* <TabsTrigger value="preferences">
               <Bell className="h-4 w-4 mr-2" />
               Preferences
-            </TabsTrigger>
+            </TabsTrigger> */}
           </TabsList>
           
           {/* Account Information Tab */}
@@ -194,7 +194,7 @@ const Settings = () => {
               </CardFooter>
             </Card>
             
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <CardTitle>Export Data</CardTitle>
                 <CardDescription>
@@ -212,7 +212,7 @@ const Settings = () => {
                   Export All Data
                 </Button>
               </CardFooter>
-            </Card>
+            </Card> */}
           </TabsContent>
           
           {/* Plan & Usage Tab */}

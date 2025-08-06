@@ -1,3 +1,4 @@
+import { useProfile } from '@/hooks/useProfile';
 import { Checkbox } from '@/components/ui/checkbox';
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -26,22 +27,25 @@ type OpeningHours = {
   sunday: { start: string; end: string };
 };
 
+type SocialLinks = {
+    linkedin: string;
+    facebook: string;
+    instagram: string;
+    x: string;
+};
 type ProfileFormFields = {
   name: string;
   companyName: string;
   role: string;
   services: string[];
-  regions: string[];
+  geo_coverage: string[];
   employees: string;
   openingHours: OpeningHours;
   address: string;
   email: string;
   phone: string;
   website?: string;
-  linkedin?: string;
-  facebook?: string;
-  instagram?: string;
-  x?: string;
+  social_links?: SocialLinks;
   pitch?: string;
 };
 
@@ -68,17 +72,19 @@ const ProfileSetup = () => {
     companyName: '',
     role: '',
     services: [''],
-    regions: [],
+    geo_coverage: [],
     employees: '',
     openingHours: { ...DEFAULT_OPENING_HOURS },
     address: '',
     email: '',
     phone: '',
     website: '',
-    linkedin: '',
-    facebook: '',
-    instagram: '',
-    x: '',
+    social_links: {
+        linkedin: '',
+        facebook: '',
+        instagram: '',
+        x: '',
+    },
     pitch: '',
   });
 
@@ -95,6 +101,7 @@ const ProfileSetup = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const { refetch } = useProfile();
   const navigate = useNavigate();
 
   const dayTranslations: { [key: string]: string } = {
@@ -145,12 +152,12 @@ const ProfileSetup = () => {
   };
   const handleRegionToggle = (region: string) => {
     setForm((prev) => {
-      const exists = prev.regions.includes(region);
+      const exists = prev.geo_coverage.includes(region);
       return {
         ...prev,
-        regions: exists
-          ? prev.regions.filter((r: string) => r !== region)
-          : [...prev.regions, region],
+        geo_coverage: exists
+          ? prev.geo_coverage.filter((r: string) => r !== region)
+          : [...prev.geo_coverage, region],
       };
     });
   };
@@ -162,7 +169,7 @@ const ProfileSetup = () => {
     if (!form.name) errors.name = 'Nom requis';
     if (!form.companyName) errors.companyName = 'Nom entreprise requis';
     if (!form.role) errors.role = 'Rôle requis';
-    if (!form.regions.length) errors.regions = 'Sélectionnez au moins une zone';
+    if (!form.geo_coverage.length) errors.regions = 'Sélectionnez au moins une zone';
     if (!form.employees) errors.employees = 'Sélectionnez une plage';
     return errors;
   };
@@ -266,14 +273,14 @@ const ProfileSetup = () => {
                       <button
                         type="button"
                         key={region}
-                        className={`px-3 py-1 rounded-full border text-xs transition-all ${form.regions.includes(region) ? 'bg-leadryve-purple text-white border-leadryve-purple' : 'bg-white border-slate-300 text-slate-700'}`}
+                        className={`px-3 py-1 rounded-full border text-xs transition-all ${form.geo_coverage.includes(region) ? 'bg-leadryve-purple text-white border-leadryve-purple' : 'bg-white border-slate-300 text-slate-700'}`}
                         onClick={() => handleRegionToggle(region)}
                       >
                         {region}
                       </button>
                     ))}
                   </div>
-                  {form.regions.length === 0 && <div className="text-xs text-red-500 mt-1">Sélectionnez au moins une zone</div>}
+                  {form.geo_coverage.length === 0 && <div className="text-xs text-red-500 mt-1">Sélectionnez au moins une zone</div>}
                 </div>
                 <div>
                   <Label>Nombre d'employés</Label>
@@ -355,19 +362,19 @@ const ProfileSetup = () => {
                   <div className="grid grid-cols-1 gap-3 mt-2">
                     <div className="flex items-center gap-2">
                       <span className="w-20 text-xs font-medium">LinkedIn</span>
-                      <Input name="linkedin" value={form.linkedin} onChange={handleChange} className="flex-1" placeholder="Lien vers le profil LinkedIn" />
+                      <Input name="linkedin" value={form.social_links.linkedin} onChange={handleChange} className="flex-1" placeholder="Lien vers le profil LinkedIn" />
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="w-20 text-xs font-medium">Facebook</span>
-                      <Input name="facebook" value={form.facebook} onChange={handleChange} className="flex-1" placeholder="Lien vers la page Facebook" />
+                      <Input name="facebook" value={form.social_links.facebook} onChange={handleChange} className="flex-1" placeholder="Lien vers la page Facebook" />
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="w-20 text-xs font-medium">Instagram</span>
-                      <Input name="instagram" value={form.instagram} onChange={handleChange} className="flex-1" placeholder="Lien vers le profil Instagram" />
+                      <Input name="instagram" value={form.social_links.instagram} onChange={handleChange} className="flex-1" placeholder="Lien vers le profil Instagram" />
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="w-20 text-xs font-medium">X</span>
-                      <Input name="x" value={form.x} onChange={handleChange} className="flex-1" placeholder="Lien vers le profil X" />
+                      <Input name="x" value={form.social_links.x} onChange={handleChange} className="flex-1" placeholder="Lien vers le profil X" />
                     </div>
                   </div>
                 </div>

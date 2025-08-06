@@ -73,10 +73,11 @@
   - email (string, requis, email)
   - phone (string, optionnel)
   - website (string, optionnel)
-  - linkedin (string, optionnel)
-  - facebook (string, optionnel)
-  - instagram (string, optionnel)
-  - x (string, optionnel)
+  - socialNetworks (object, optionnel)
+    - linkedin (string, optionnel)
+    - facebook (string, optionnel)
+    - instagram (string, optionnel)
+    - x (string, optionnel)
   - pitch (string, optionnel)
 - Réponse :
   - 200 OK
