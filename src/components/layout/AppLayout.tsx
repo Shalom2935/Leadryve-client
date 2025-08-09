@@ -13,44 +13,46 @@ interface AppLayoutProps {
 export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const isMobile = useIsMobile();
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
-  
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // Ajout état collapsed
+
   const toggleMobileSidebar = () => {
     setShowMobileSidebar(!showMobileSidebar);
   };
 
+  const handleSidebarCollapse = (collapsed: boolean) => {
+    setSidebarCollapsed(collapsed);
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex relative">
-      {/* Sidebar - fixed position on all devices */}
-      <div 
+      <div
         className={`${isMobile ? 'fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 ease-in-out' : 'fixed inset-y-0 left-0 z-30'} ${
           isMobile && !showMobileSidebar ? '-translate-x-full' : 'translate-x-0'
         }`}
       >
-        <Sidebar />
+        <Sidebar onCollapse={handleSidebarCollapse} />
       </div>
-
-      {/* Mobile sidebar overlay */}
       {isMobile && showMobileSidebar && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40"
           onClick={toggleMobileSidebar}
         />
       )}
-      
-      <div className={`flex-1 flex flex-col ${!isMobile ? 'ml-[250px]' : ''}`}>
+      <div className={`flex-1 flex flex-col ${
+        !isMobile ? (sidebarCollapsed ? 'ml-[70px]' : 'ml-[250px]') : ''
+      }`}>
         <Topbar>
           {isMobile && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={toggleMobileSidebar} 
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleMobileSidebar}
               className="mr-2"
             >
               <Menu size={24} />
             </Button>
           )}
         </Topbar>
-        
         <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto animate-fade-in">
           {children}
         </main>

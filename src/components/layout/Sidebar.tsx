@@ -14,14 +14,17 @@ import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
 
-export const Sidebar: React.FC = () => {
+export const Sidebar: React.FC<{ onCollapse?: (collapsed: boolean) => void }> = ({ onCollapse }) => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const isMobile = useIsMobile();
   const { logout } = useAuth();
 
   const toggleSidebar = () => {
-    setCollapsed(!collapsed);
+    setCollapsed((prev) => {
+      onCollapse && onCollapse(!prev);
+      return !prev;
+    });
   };
 
   const NavItem = ({ to, icon: Icon, label }: { to: string; icon: React.ElementType; label: string }) => {
@@ -44,13 +47,13 @@ export const Sidebar: React.FC = () => {
   };
 
   const sidebarWidth = isMobile 
-    ? "w-[250px]" 
+    ? "w-[250px] max-w-[80vw]" // Ajout max-w pour mobile
     : (collapsed ? "w-[70px]" : "w-[250px]");
 
   return (
     <aside 
       className={cn(
-        "bg-white border-r border-slate-200 transition-all duration-300 flex flex-col h-screen",
+        "bg-white border-r border-slate-200 transition-all duration-300 flex flex-col h-screen overflow-y-auto", // Ajout overflow-y-auto
         sidebarWidth
       )}
     >
