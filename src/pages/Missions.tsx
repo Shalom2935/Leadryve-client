@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { Button } from '@/components/ui/button';
 import { 
-  CheckCircle2, 
   Clock, 
   ChevronRight, 
   Target, 
@@ -35,100 +34,110 @@ import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { dashboardMissionsSchema } from '@/lib/schemas';
 
-// MissionCard component for mobile and tablet views
-const MissionCard: React.FC<{ 
-  mission: any;
-  renderStatusBadge: (status: string) => React.ReactNode;
-}> = ({ mission, renderStatusBadge }) => {
-  return (
-    <Card key={mission.id} className="mission-card">
-      <div className="p-4 space-y-4">
-        <div className="flex justify-between items-start mb-2">
-          <div>
-            <h3 className="font-semibold text-lg">{mission.name}</h3>
-            <p className="text-sm text-slate-500 line-clamp-2">{mission.description}</p>
-          </div>
-          <div className="flex">
-            {renderStatusBadge(mission.status)}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-7 w-7 p-0 ml-1">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem asChild>
-                  <Link to={`/missions/${mission.id}`}>View Details</Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>Edit Mission</DropdownMenuItem>
-                <DropdownMenuItem>Duplicate</DropdownMenuItem>
-                {mission.status === 'active' && (
-                  <DropdownMenuItem>Pause Mission</DropdownMenuItem>
-                )}
-                {mission.status === 'draft' && (
-                  <DropdownMenuItem>Activate Mission</DropdownMenuItem>
-                )}
-                <DropdownMenuItem className="text-red-600">Delete Mission</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-        
-        <div>
-          <div className="flex justify-between text-sm mb-1">
-            <span>Progress</span>
-            <span className="text-leadryve-purple font-medium">{mission.progress}%</span>
-          </div>
-          <Progress value={mission.progress} className="h-2" />
-        </div>
-        
-        <div className="flex justify-between text-sm">
-          <div className="flex items-center gap-1">
-            <Target size={14} className="text-slate-500" />
-            <span className="text-slate-600">Started {mission.startDate}</span>
-          </div>
-        </div>
-        
-        <div className="flex justify-between text-sm">
-          <div className="flex items-center gap-1">
-            <Users size={14} />
-            <span>{mission.leads}/{mission.target} leads</span>
-          </div>
-          <div className="flex items-center gap-1 text-slate-500">
-            <Clock size={14} />
-            <span>{mission.lastUpdated}</span>
-          </div>
-        </div>
-        
-        <div className="flex justify-end mt-2">
-          <Button variant="ghost" asChild className="text-leadryve-purple hover:text-leadryve-purple hover:bg-leadryve-light-purple p-0 h-8">
-            <Link to={`/missions/${mission.id}`}>
-              View details <ChevronRight size={16} />
-            </Link>
-          </Button>
-        </div>
-      </div>
-    </Card>
-  );
+// --- Fonctions et Composants Utilitaires ---
+
+const renderStatusBadge = (status: string) => {
+  switch (status) {
+    case 'completed':
+      return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Terminé</Badge>;
+    case 'active':
+    case 'in_progress':
+      return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">En cours</Badge>;
+    case 'draft':
+      return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">Brouillon</Badge>;
+    default:
+      return <Badge className="bg-slate-100 text-slate-800 hover:bg-slate-200">{status}</Badge>;
+  }
 };
+
+const MissionCardContent: React.FC<{ mission: any }> = ({ mission }) => (
+  <>
+    <div className="flex justify-between items-start mb-2">
+      <div>
+        <h3 className="font-semibold text-lg">{mission.name}</h3>
+        <p className="text-sm text-slate-500 line-clamp-2">{mission.description}</p>
+      </div>
+      <div className="flex items-center">
+        {renderStatusBadge(mission.status)}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-7 w-7 p-0 ml-1">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem asChild>
+              <Link to={`/missions/${mission.id}`}>Voir les détails</Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem>Modifier</DropdownMenuItem>
+            <DropdownMenuItem>Dupliquer</DropdownMenuItem>
+            {mission.status === 'active' && <DropdownMenuItem>Mettre en pause</DropdownMenuItem>}
+            {mission.status === 'draft' && <DropdownMenuItem>Activer</DropdownMenuItem>}
+            <DropdownMenuItem className="text-red-600">Supprimer</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+    
+    <div>
+      <div className="flex justify-between text-sm mb-1">
+        <span>Progression</span>
+        <span className="text-leadryve-purple font-medium">{mission.progress}%</span>
+      </div>
+      <Progress value={mission.progress} className="h-2" />
+    </div>
+    
+    <div className="flex justify-between text-sm text-slate-600 mt-2">
+      <div className="flex items-center gap-1">
+        <Target size={14} />
+        <span>Démarrée il y a {mission.startDate}</span>
+      </div>
+      <div className="flex items-center gap-1">
+        <Users size={14} />
+        <span>{mission.leads}/{mission.target} leads</span>
+      </div>
+    </div>
+    
+    <div className="flex justify-end mt-4">
+      <Button variant="ghost" asChild className="text-leadryve-purple hover:text-leadryve-purple hover:bg-leadryve-light-purple p-0 h-8">
+        <Link to={`/missions/${mission.id}`}>
+          Voir les détails <ChevronRight size={16} />
+        </Link>
+      </Button>
+    </div>
+  </>
+);
+
+const MissionCard: React.FC<{ mission: any }> = ({ mission }) => (
+  <Card className="mission-card">
+    <div className="p-4 space-y-4">
+      <MissionCardContent mission={mission} />
+    </div>
+  </Card>
+);
+
+const MissionListItem: React.FC<{ mission: any }> = ({ mission }) => (
+  <Card className="mission-card w-full">
+    <div className="p-4">
+      <MissionCardContent mission={mission} />
+    </div>
+  </Card>
+);
+
+// --- Composant Principal ---
 
 const Missions = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const isMobile = useIsMobile();
   const [missions, setMissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [skip, setSkip] = useState(0);
   const limit = 10;
 
-  // Determine if we're on tablet or mobile (under 1024px)
-  const isSmallScreen = window.innerWidth < 1024;
+  const isSmallScreen = useIsMobile();
   
-  // Use grid view by default on small screens
-  React.useEffect(() => {
-    if (isSmallScreen) {
-      setViewMode('grid');
-    }
+  useEffect(() => {
+    if (isSmallScreen) setViewMode('grid');
   }, [isSmallScreen]);
 
   useEffect(() => {
@@ -138,7 +147,7 @@ const Missions = () => {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_BASE || '/api'}/missions?limit=${limit}&skip=${skip}`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json',
           },
         });
@@ -146,7 +155,7 @@ const Missions = () => {
         const data = await res.json();
         const parsed = dashboardMissionsSchema.safeParse(data.items);
         if (!parsed.success) {
-          console.error('Zod validation failed for missions:', parsed.error, data.items);
+          console.error('Erreur de validation Zod pour les missions:', parsed.error, data.items);
           throw new Error('Format de données inattendu');
         }
         setMissions(parsed.data);
@@ -159,18 +168,23 @@ const Missions = () => {
     fetchMissions();
   }, [skip]);
 
-  const renderStatusBadge = (status: string) => {
-    if (status === 'active') {
-      return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Active</Badge>;
-    } else if (status === 'completed') {
-      return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Completed</Badge>;
-    } else {
-      return <Badge className="bg-slate-100 text-slate-800 hover:bg-slate-200">Draft</Badge>;
+  const renderMissions = () => {
+    if (loading) {
+      return <div className="col-span-full text-center py-8 text-muted-foreground">Chargement des missions...</div>;
     }
-  };
+    if (error) {
+      return <div className="col-span-full text-center py-8 text-red-500">{error}</div>;
+    }
+    if (missions.length === 0) {
+      return <div className="col-span-full text-center py-8 text-muted-foreground">Aucune mission pour le moment.</div>;
+    }
 
-  const toggleViewMode = () => {
-    setViewMode(viewMode === 'grid' ? 'list' : 'grid');
+    return missions.map((mission) => {
+      if (viewMode === 'list' && !isSmallScreen) {
+        return <MissionListItem key={mission.id} mission={mission} />;
+      }
+      return <MissionCard key={mission.id} mission={mission} />;
+    });
   };
 
   return (
@@ -180,28 +194,22 @@ const Missions = () => {
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Missions</h1>
             <p className="text-muted-foreground">
-              Manage your prospecting campaigns
+              Gérez vos campagnes de prospection
             </p>
           </div>
           <div className="flex gap-2">
             {!isSmallScreen && (
-              <Button variant="outline" onClick={toggleViewMode}>
+              <Button variant="outline" onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}>
                 {viewMode === 'list' ? (
-                  <>
-                    <LayoutGrid className="h-4 w-4 mr-1" /> 
-                    Grid View
-                  </>
+                  <><LayoutGrid className="h-4 w-4 mr-1" /> Vue Grille</>
                 ) : (
-                  <>
-                    <LayoutList className="h-4 w-4 mr-1" /> 
-                    List View
-                  </>
+                  <><LayoutList className="h-4 w-4 mr-1" /> Vue Liste</>
                 )}
               </Button>
             )}
             <Button asChild>
               <Link to="/missions/create">
-                <Plus className="h-4 w-4 mr-1" /> New Mission
+                <Plus className="h-4 w-4 mr-1" /> Nouvelle Mission
               </Link>
             </Button>
           </div>
@@ -212,126 +220,31 @@ const Missions = () => {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
             <Input
               type="search"
-              placeholder="Search missions..."
+              placeholder="Rechercher des missions..."
               className="pl-8"
             />
           </div>
           <div className="flex gap-2">
             <Select defaultValue="all">
               <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="Status" />
+                <SelectValue placeholder="Statut" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="all">Tous les statuts</SelectItem>
+                <SelectItem value="active">En cours</SelectItem>
+                <SelectItem value="completed">Terminé</SelectItem>
+                <SelectItem value="draft">Brouillon</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline">
-              <Filter className="h-4 w-4 mr-1" /> Filter
+              <Filter className="h-4 w-4 mr-1" /> Filtrer
             </Button>
           </div>
         </div>
 
-        {/* Grid View (default for tablet and mobile) */}
-        {(viewMode === 'grid' || isSmallScreen) && (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {loading ? (
-              <div className="col-span-3 text-center py-8 text-muted-foreground">Chargement des missions...</div>
-            ) : error ? (
-              <div className="col-span-3 text-center py-8 text-red-500">{error}</div>
-            ) : missions.length === 0 ? (
-              <div className="col-span-3 text-center py-8 text-muted-foreground">Aucune mission pour le moment.</div>
-            ) : (
-              missions.map((mission) => (
-                <MissionCard 
-                  key={mission.id}
-                  mission={mission}
-                  renderStatusBadge={renderStatusBadge}
-                />
-              ))
-            )}
-          </div>
-        )}
-
-        {/* List View (only for desktop when selected) */}
-        {viewMode === 'list' && !isSmallScreen && (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {loading ? (
-              <div className="col-span-3 text-center py-8 text-muted-foreground">Chargement des missions...</div>
-            ) : error ? (
-              <div className="col-span-3 text-center py-8 text-red-500">{error}</div>
-            ) : missions.length === 0 ? (
-              <div className="col-span-3 text-center py-8 text-muted-foreground">Aucune mission pour le moment.</div>
-            ) : (
-              missions.map((mission) => (
-                <Card key={mission.id} className="mission-card">
-                  <div className="flex justify-between items-start mb-3 p-4">
-                    <div>
-                      <h3 className="font-semibold text-lg">{mission.name}</h3>
-                      <p className="text-sm text-slate-500 line-clamp-2">{mission.description}</p>
-                    </div>
-                    <div className="flex">
-                      {renderStatusBadge(mission.status)}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0 ml-1">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Link to={`/missions/${mission.id}`}>View Details</Link>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>Edit Mission</DropdownMenuItem>
-                          <DropdownMenuItem>Duplicate</DropdownMenuItem>
-                          {mission.status === 'active' && (
-                            <DropdownMenuItem>Pause Mission</DropdownMenuItem>
-                          )}
-                          {mission.status === 'draft' && (
-                            <DropdownMenuItem>Activate Mission</DropdownMenuItem>
-                          )}
-                          <DropdownMenuItem className="text-red-600">Delete Mission</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
-                  <div className="mb-4 px-4">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>Progress</span>
-                      <span className="text-leadryve-purple font-medium">{mission.progress}%</span>
-                    </div>
-                    <Progress value={mission.progress} className="h-2" />
-                  </div>
-                  <div className="flex justify-between mb-4 text-sm px-4">
-                    <div className="flex items-center gap-1">
-                      <Target size={14} className="text-slate-500" />
-                      <span className="text-slate-600">Started {mission.startDate}</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between text-sm px-4">
-                    <div className="flex items-center gap-1">
-                      <Users size={14} />
-                      <span>{mission.lead_count}/{mission.target} leads</span>
-                    </div>
-                    <div className="flex items-center gap-1 text-slate-500">
-                      <Clock size={14} />
-                      <span>{mission.lastUpdated}</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-end mt-4 px-4 pb-4">
-                    <Button variant="ghost" asChild className="text-leadryve-purple hover:text-leadryve-purple hover:bg-leadryve-light-purple p-0 h-8">
-                      <Link to={`/missions/${mission.id}`}>
-                        View details <ChevronRight size={16} />
-                      </Link>
-                    </Button>
-                  </div>
-                </Card>
-              ))
-            )}
-          </div>
-        )}
+        <div className={`grid gap-4 ${viewMode === 'list' && !isSmallScreen ? 'grid-cols-1' : 'md:grid-cols-2 lg:grid-cols-3'}`}>
+          {renderMissions()}
+        </div>
       </div>
     </AppLayout>
   );

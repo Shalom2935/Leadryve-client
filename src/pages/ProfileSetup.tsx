@@ -1,3 +1,4 @@
+import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { Checkbox } from '@/components/ui/checkbox';
 import React, { useState } from 'react';
@@ -37,6 +38,7 @@ type ProfileFormFields = {
   name: string;
   companyName: string;
   role: string;
+  sector: string;
   services: string[];
   geo_coverage: string[];
   employees: string;
@@ -71,6 +73,7 @@ const ProfileSetup = () => {
     name: '',
     companyName: '',
     role: '',
+    sector: '',
     services: [''],
     geo_coverage: [],
     employees: '',
@@ -102,6 +105,7 @@ const ProfileSetup = () => {
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const { refetch } = useProfile();
+  const { token } = useAuth();
   const navigate = useNavigate();
 
   const dayTranslations: { [key: string]: string } = {
@@ -169,6 +173,7 @@ const ProfileSetup = () => {
     if (!form.name) errors.name = 'Nom requis';
     if (!form.companyName) errors.companyName = 'Nom entreprise requis';
     if (!form.role) errors.role = 'Rôle requis';
+    if (!form.sector) errors.sector = 'Secteur d\'activité requis';
     if (!form.geo_coverage.length) errors.regions = 'Sélectionnez au moins une zone';
     if (!form.employees) errors.employees = 'Sélectionnez une plage';
     return errors;
@@ -180,23 +185,39 @@ const ProfileSetup = () => {
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
     setLoading(true);
+
+    const payload = {
+      name: form.name,
+      company_name: form.companyName,
+      role: form.role,
+      sector: form.sector,
+      services: form.services,
+      geo_coverage: form.geo_coverage,
+      employees: form.employees,
+      opening_hours: form.openingHours,
+      location: form.address,
+      company_email: form.email,
+      phone_number: form.phone,
+      website: form.website,
+      social_links: form.social_links,
+      pitch: form.pitch,
+    };
+
     try {
-      const token = localStorage.getItem('token');
       const res = await fetch(`${API_BASE}/profile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error('Erreur lors de la création du profil');
-      const data = await res.json();
-      if (data.success) {
-        navigate('/');
-      } else {
-        throw new Error(data.message || 'Erreur lors de la création du profil');
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.detail || 'Erreur lors de la création du profil');
       }
+      await refetch();
+      navigate('/');
     } catch (err: any) {
       setApiError(err.message || 'Erreur inconnue');
     } finally {
@@ -247,6 +268,11 @@ const ProfileSetup = () => {
                   <Label>Rôle</Label>
                   <Input name="role" value={form.role} onChange={handleChange} required />
                   {errors.role && <div className="text-red-500 text-xs mt-1">{errors.role}</div>}
+                </div>
+                <div>
+                  <Label>Secteur d'activité</Label>
+                  <Input name="sector" value={form.sector} onChange={handleChange} required />
+                  {errors.sector && <div className="text-red-500 text-xs mt-1">{errors.sector}</div>}
                 </div>
                 <div>
                   <Label>Services/produits proposés</Label>
@@ -341,8 +367,8 @@ const ProfileSetup = () => {
             {step === 2 && (
               <React.Fragment>
                 <div>
-                  <Label>Email de l’entreprise</Label>
-                  <Input name="email" type="email" value={form.email} onChange={handleChange} required placeholder="L'utilisateur doit avoir accès à cette adresse" />
+                  <Label>Email Professionnelle</Label>
+                  <Input name="email" type="email" value={form.email} onChange={handleChange} required placeholder="" />
                   {errors.email && <div className="text-red-500 text-xs mt-1">{errors.email}</div>}
                 </div>
                 <div>

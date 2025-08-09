@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { Eye, EyeOff } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
@@ -22,6 +23,8 @@ const Auth = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
 
@@ -81,9 +84,17 @@ const Auth = () => {
         body: JSON.stringify(form),
       });
       if (!res.ok) throw new Error('Email ou mot de passe incorrect');
+      
+      // On s'attend à recevoir { access_token: string, profile_exists: boolean }
       const data = await res.json();
-      if (data && data.access_token) login(data.access_token);
-      navigate('/');
+      
+      if (data && data.access_token) {
+        // On passe le token et l'état du profil à la fonction de login
+        login(data.access_token, data.profile_exists);
+      } else {
+        throw new Error('Réponse de l\'API invalide');
+      }
+
     } catch (err: any) {
       setApiError(err.message || 'Erreur inconnue');
     } finally {
@@ -91,31 +102,12 @@ const Auth = () => {
     }
   };
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-leadryve-purple/10 to-slate-100">
-      <div className="w-full flex justify-end pr-8 mb-8 mt-12">
-        <div className="flex gap-4">
-          <button
-            type="button"
-            className={`px-6 py-2 rounded-lg shadow text-sm font-semibold border transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-leadryve-purple focus:z-10
-              ${mode === 'register' ? 'bg-leadryve-purple text-white border-leadryve-purple' : 'bg-white border-slate-300 text-slate-700 hover:bg-leadryve-purple/10'}`}
-            onClick={() => setMode('register')}
-          >
-            S'enregistrer
-          </button>
-          <button
-            type="button"
-            className={`px-6 py-2 rounded-lg shadow text-sm font-semibold border transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-leadryve-purple focus:z-10
-              ${mode === 'login' ? 'bg-leadryve-purple text-white border-leadryve-purple' : 'bg-white border-slate-300 text-slate-700 hover:bg-leadryve-purple/10'}`}
-            onClick={() => setMode('login')}
-          >
-            Se connecter
-          </button>
-        </div>
-      </div>
-      <div className="flex-1 flex flex-col justify-center items-center w-full pt-16">
-        <Card className="w-full max-w-xl shadow-xl animate-fade-in">
+    <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-leadryve-purple/10 to-slate-100 p-4 sm:p-6 md:p-8">
+      <div className="flex-grow flex flex-col justify-center items-center w-full">
+        <img src="/Logo.svg" alt="Leadryve Logo" className="md:h-25 h-14  mb-8" />
+        <Card className="w-full max-w-md shadow-xl animate-fade-in">
           <CardHeader>
-            <CardTitle>{mode === 'register' ? 'Créer votre compte' : 'Connexion à votre compte'}</CardTitle>
+            <CardTitle className="text-center text-2xl">{mode === 'register' ? 'Créer votre compte' : 'Connexion'}</CardTitle>
           </CardHeader>
           {mode === 'register' ? (
             <form onSubmit={handleSignup}>
@@ -127,12 +119,22 @@ const Auth = () => {
                 </div>
                 <div>
                   <Label>Mot de passe</Label>
-                  <Input name="password" type="password" value={signupForm.password} onChange={handleSignupChange} required autoComplete="new-password" />
+                  <div className="relative">
+                    <Input name="password" type={showPassword ? 'text' : 'password'} value={signupForm.password} onChange={handleSignupChange} required autoComplete="new-password" />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700">
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                   {errors.password && <div className="text-red-500 text-xs mt-1">{errors.password}</div>}
                 </div>
                 <div>
                   <Label>Confirmer le mot de passe</Label>
-                  <Input name="confirmPassword" type="password" value={signupForm.confirmPassword} onChange={handleSignupChange} required autoComplete="new-password" />
+                  <div className="relative">
+                    <Input name="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} value={signupForm.confirmPassword} onChange={handleSignupChange} required autoComplete="new-password" />
+                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700">
+                      {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                   {errors.confirmPassword && <div className="text-red-500 text-xs mt-1">{errors.confirmPassword}</div>}
                 </div>
               </CardContent>
@@ -151,7 +153,12 @@ const Auth = () => {
                 </div>
                 <div>
                   <Label>Mot de passe</Label>
-                  <Input name="password" type="password" value={form.password} onChange={handleChange} required autoComplete="current-password" />
+                  <div className="relative">
+                    <Input name="password" type={showPassword ? 'text' : 'password'} value={form.password} onChange={handleChange} required autoComplete="current-password" />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 hover:text-gray-700">
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end">
@@ -161,16 +168,34 @@ const Auth = () => {
               </CardFooter>
             </form>
           )}
-          {apiError && <div className="text-red-500 text-xs mb-2">{apiError}</div>}
+          {apiError && <div className="text-red-500 text-xs p-4 text-center">{apiError}</div>}
         </Card>
+        <div className="mt-6 text-center text-sm">
+          {mode === 'register' ? (
+            <p>
+              Vous avez déjà un compte ?{' '}
+              <button onClick={() => setMode('login')} className="font-semibold text-leadryve-purple hover:underline focus:outline-none">
+                Se connecter
+              </button>
+            </p>
+          ) : (
+            <p>
+              Vous n'avez pas de compte ?{' '}
+              <button onClick={() => setMode('register')} className="font-semibold text-leadryve-purple hover:underline focus:outline-none">
+                S'inscrire
+              </button>
+            </p>
+          )}
+        </div>
       </div>
-      <div className="mt-8 text-center text-muted-foreground text-xs max-w-md">
+      <div className="w-full text-center text-muted-foreground text-xs max-w-md py-4">
         {mode === 'register'
           ? 'Un email de confirmation vous sera envoyé après inscription.'
-          : 'Connectez-vous à votre compte pour accéder à la plateforme.'}
+          : 'Connectez-vous pour accéder à votre espace.'}
       </div>
     </div>
   );
 };
 
 export default Auth;
+

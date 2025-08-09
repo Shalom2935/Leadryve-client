@@ -3,7 +3,6 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Target, 
-  Users, 
   Settings, 
   Menu, 
   X,
@@ -44,7 +43,6 @@ export const Sidebar: React.FC = () => {
     );
   };
 
-  // Show the full sidebar on mobile, never collapsed
   const sidebarWidth = isMobile 
     ? "w-[250px]" 
     : (collapsed ? "w-[70px]" : "w-[250px]");
@@ -59,16 +57,13 @@ export const Sidebar: React.FC = () => {
       <div className="p-4 border-b border-slate-200 flex items-center justify-between">
         {(!collapsed || isMobile) && (
           <Link to="/" className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-md bg-leadryve-purple flex items-center justify-center">
-              <span className="text-white font-semibold">LR</span>
-            </div>
-            <span className="font-bold text-lg">Leadryve</span>
+            <img src="/Logo.svg" alt="Leadryve Logo" className="h-8 w-auto" />
           </Link>
         )}
         {collapsed && !isMobile && (
-          <div className="h-8 w-8 rounded-md bg-leadryve-purple flex items-center justify-center mx-auto">
-            <span className="text-white font-semibold">LR</span>
-          </div>
+          <Link to="/" className="flex items-center justify-center w-full">
+            <img src="/favicon.ico" alt="Leadryve Icon" className="h-8 w-8" />
+          </Link>
         )}
         {!isMobile && (
           <Button 
@@ -85,8 +80,7 @@ export const Sidebar: React.FC = () => {
       <div className="flex-1 px-3 py-6 flex flex-col gap-2 overflow-y-auto">
         <NavItem to="/" icon={LayoutDashboard} label="Dashboard" />
         <NavItem to="/missions" icon={Target} label="Missions" />
-        {/* <NavItem to="/leads" icon={Users} label="Leads" /> */}
-        <NavItem to="/settings" icon={Settings} label="Settings" />
+        <NavItem to="/settings" icon={Settings} label="Paramètres" />
         
         {isMobile && (
           <Link 
@@ -94,21 +88,12 @@ export const Sidebar: React.FC = () => {
             className="mt-4 flex items-center gap-2 bg-leadryve-purple text-white px-3 py-2 rounded-lg text-sm font-medium"
           >
             <Plus size={18} />
-            <span>New Mission</span>
+            <span>Nouvelle Mission</span>
           </Link>
         )}
       </div>
 
       <div className="border-t border-slate-200 p-4">
-        {/* {(!collapsed || isMobile) && (
-          <div className="text-xs text-slate-500 mb-4">
-            <p>Pro Plan</p>
-            <div className="mt-2 bg-slate-200 h-2 rounded-full">
-              <div className="bg-leadryve-purple h-full rounded-full w-[65%]"></div>
-            </div>
-            <p className="mt-1">435/650 leads used</p>
-          </div>
-        )} */}
         <Button 
           variant="ghost" 
           size={collapsed && !isMobile ? "icon" : "sm"} 
@@ -116,7 +101,7 @@ export const Sidebar: React.FC = () => {
           onClick={logout}
         >
           <LogOut size={16} />
-          {(!collapsed || isMobile) && <span className="ml-2">Log out</span>}
+          {(!collapsed || isMobile) && <span className="ml-2">Se déconnecter</span>}
         </Button>
       </div>
     </aside>

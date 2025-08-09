@@ -1,36 +1,47 @@
-import React, { useState, useEffect, useContext, createContext } from 'react';
+import React, { useState, useEffect, useContext, createContext, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// Le contexte inclut maintenant une fonction login qui gère la redirection
 const AuthContext = createContext<{
   isAuthenticated: boolean;
-  login: (token: string) => void;
+  login: (token: string, profileExists: boolean) => void;
   logout: () => void;
   token: string | null;
 } | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for token in memory, this is a placeholder for a more robust solution
-    // like checking a secure cookie or other in-memory storage.
+    const storedToken = localStorage.getItem('token');
+    if (storedToken) {
+      setToken(storedToken);
+    }
     setIsLoading(false);
   }, []);
 
-  const login = (newToken: string) => {
+  const login = useCallback((newToken: string, profileExists: boolean) => {
+    localStorage.setItem('token', newToken);
     setToken(newToken);
-    navigate('/');
-  };
+    // Redirection basée sur l'existence du profil
+    if (profileExists) {
+      navigate('/');
+    } else {
+      navigate('/profile');
+    }
+  }, [navigate]);
 
-  const logout = () => {
+  const logout = useCallback(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('userProfile'); // Nettoyer aussi le cache du profil
     setToken(null);
     navigate('/auth');
-  };
+  }, [navigate]);
 
   if (isLoading) {
-    return null; // Or a loading spinner
+    return null; // Ou un spinner de chargement
   }
 
   return (
@@ -47,15 +58,16 @@ export function useAuth() {
 }
 
 export function RequireAuth({ children }: { children: JSX.Element }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated === false) {
+    if (!isLoading && !isAuthenticated) {
       navigate('/auth');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isLoading, navigate]);
 
-  if (!isAuthenticated) return null;
+  if (isLoading || !isAuthenticated) return null;
   return children;
 }
+

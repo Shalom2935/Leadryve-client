@@ -24,13 +24,12 @@ const Dashboard = () => {
       try {
         const res = await fetch(`${API_BASE}/dashboard/summary`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json',
           },
         });
         if (!res.ok) throw new Error('Erreur lors de la récupération des statistiques');
         const data = await res.json();
-        // Validation Zod
         const parsed = dashboardSummarySchema.safeParse(data);
         if (!parsed.success) throw new Error('Format de données inattendu');
         setStats(parsed.data);
@@ -45,24 +44,30 @@ const Dashboard = () => {
 
   const statCards = stats ? [
     {
-      title: 'Total Leads',
+      title: 'Leads Totaux',
       value: stats.total_leads,
       icon: Users,
+      description: "Nombre total de leads générés"
     },
     {
-      title: 'Emails Sent',
+      title: 'Emails Envoyés',
       value: stats.sent_mails,
       icon: Mail,
+      description: "Nombre total d'emails envoyés"
     },
   ] : [];
 
   const renderStatusBadge = (status: string) => {
-    if (status === 'active') {
-      return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Active</Badge>;
-    } else if (status === 'completed') {
-      return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">Completed</Badge>;
-    } else {
-      return <Badge className="bg-slate-100 text-slate-800 hover:bg-slate-200">Draft</Badge>;
+    switch (status) {
+      case 'completed':
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">Terminé</Badge>;
+      case 'active':
+      case 'in_progress':
+        return <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">En cours</Badge>;
+      case 'draft':
+        return <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">Brouillon</Badge>;
+      default:
+        return <Badge className="bg-slate-100 text-slate-800 hover:bg-slate-200">{status}</Badge>;
     }
   };
 
@@ -71,8 +76,8 @@ const Dashboard = () => {
       <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back to Leadryve.</p>
+            <h1 className="text-2xl font-bold tracking-tight">Tableau de bord</h1>
+            <p className="text-muted-foreground">Ravi de vous revoir sur Leadryve.</p>
           </div>
         </div>
 
@@ -94,20 +99,13 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent className="flex flex-col items-center justify-center">
                   <div className="text-3xl font-extrabold text-slate-900 mb-1">{stat.value}</div>
-                  {/* Plus d'insight de change percent */}
-                  {stat.title === 'Total Leads' && (
-                    <div className="text-xs text-slate-500">Nombre total de leads générés</div>
-                  )}
-                  {stat.title === 'Emails Sent' && (
-                    <div className="text-xs text-slate-500">Nombre total d'emails envoyés</div>
-                  )}
+                  <div className="text-xs text-slate-500">{stat.description}</div>
                 </CardContent>
               </Card>
             ))
           )}
         </div>
 
-        {/* Missions récentes */}
         <div>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Vos missions récentes</h2>
@@ -131,7 +129,7 @@ const Dashboard = () => {
                   <div className="flex justify-between items-start mb-3">
                     <h3 className="font-semibold text-lg">{mission.name}</h3>
                     <div className="flex flex-col items-end">
-                      <span className="text-xs text-slate-500">{mission.started_ago} jours</span>
+                      <span className="text-xs text-slate-500">Il y a {mission.started_ago} jours</span>
                       <span className="mt-1">{renderStatusBadge(mission.status)}</span>
                     </div>
                   </div>
@@ -140,7 +138,7 @@ const Dashboard = () => {
                   </div>
                   <div className="mb-4">
                     <div className="flex justify-between text-sm mb-1">
-                      <span>Progress</span>
+                      <span>Progression</span>
                       <span className="text-leadryve-purple font-medium">{mission.progress}%</span>
                     </div>
                     <Progress value={mission.progress} className="h-2" />

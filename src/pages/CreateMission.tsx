@@ -85,7 +85,7 @@ const CreateMission = () => {
     setLoading(true);
     setError(null);
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem('token');
       const secteur = formData.target_sector === 'Autre' ? formData.secteur_autre : formData.target_sector;
       const res = await fetch(`${import.meta.env.VITE_API_BASE}/missions`, {
         method: 'POST',

@@ -14,6 +14,12 @@ import {
 import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface TopbarProps {
   children?: React.ReactNode;
@@ -33,57 +39,32 @@ export const Topbar: React.FC<TopbarProps> = ({ children, onToggleSidebar }) => 
           </Button>
         )}
         {children}
-        
-        {/* <div className={`relative ${isMobile ? 'w-full max-w-[180px]' : 'w-full max-w-md'}`}>
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
-          <Input
-            type="search"
-            placeholder="Search..."
-            className="w-full pl-8 bg-slate-50 border-slate-200"
-          />
-        </div> */}
       </div>
       
       <div className="flex items-center gap-2 md:gap-4">
         {!isMobile && (
-          <Button variant="default" size="sm" asChild>
-            <Link to="/missions/create">
-              <Plus size={16} className="mr-1" />
-              New Mission
-            </Link>
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="default" size="icon" asChild>
+                  <Link to="/missions/create">
+                    <Plus size={16} />
+                    <span className="sr-only">Nouvelle Mission</span>
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Créer une nouvelle mission</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         )}
-        
-        {/* <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell size={20} />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500"></span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[280px] md:w-80">
-            <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="flex flex-col items-start gap-1 cursor-pointer">
-              <p className="font-medium">Mission "Tech SaaS in California" completed</p>
-              <p className="text-xs text-slate-500">2 minutes ago</p>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="flex flex-col items-start gap-1 cursor-pointer">
-              <p className="font-medium">New leads available in "UK Startups"</p>
-              <p className="text-xs text-slate-500">3 hours ago</p>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-center text-leadryve-purple cursor-pointer">
-              View all notifications
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu> */}
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-8 w-8 rounded-full" size="icon">
               <Avatar className="h-8 w-8">
-                <AvatarImage src="" alt="User" />
+                <AvatarImage src="" alt="Utilisateur" />
                 <AvatarFallback className="bg-leadryve-purple text-white">JS</AvatarFallback>
               </Avatar>
             </Button>
@@ -97,17 +78,14 @@ export const Topbar: React.FC<TopbarProps> = ({ children, onToggleSidebar }) => 
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              Profile
+              Profil
             </DropdownMenuItem>
             <DropdownMenuItem>
-              Account settings
+              Paramètres du compte
             </DropdownMenuItem>
-            {/* <DropdownMenuItem>
-              Billing
-            </DropdownMenuItem> */}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>
-              Log out
+              Se déconnecter
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
