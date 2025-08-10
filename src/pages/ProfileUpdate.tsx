@@ -1,13 +1,14 @@
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { Checkbox } from '@/components/ui/checkbox';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { toast } from 'sonner';
 
 const REGIONS = [
   'Adamaoua', 'Centre', 'Est', 'Extrême-Nord', 'Littoral', 'Nord', 'Nord-Ouest', 'Ouest', 'Sud', 'Sud-Ouest', 'Cameroun', 'International'
@@ -67,8 +68,12 @@ const steps = [
   'Message (Pitch)'
 ];
 
-const ProfileSetup = () => {
+const ProfileUpdate = () => {
   const [step, setStep] = useState(1);
+  const { profile, refetch } = useProfile();
+  const { token } = useAuth();
+  const navigate = useNavigate();
+
   const [form, setForm] = useState<ProfileFormFields>({
     name: '',
     companyName: '',
@@ -104,9 +109,34 @@ const ProfileSetup = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
-  const { refetch } = useProfile();
-  const { token } = useAuth();
-  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (profile) {
+      setForm({
+        name: profile.name || '',
+        companyName: profile.company_name || '',
+        role: profile.role || '',
+        sector: profile.sector || '',
+        services: profile.services || [''],
+        geo_coverage: profile.geo_coverage || [],
+        employees: profile.employees || '',
+        openingHours: profile.opening_hours || { ...DEFAULT_OPENING_HOURS },
+        address: profile.location || '',
+        email: profile.company_email || '',
+        phone: profile.phone_number || '',
+        website: profile.website || '',
+        social_links: profile.social_links || { linkedin: '', facebook: '', instagram: '', x: '' },
+        pitch: profile.pitch || '',
+      });
+
+      const updatedOpeningDays: any = {};
+      for (const day in profile.opening_hours) {
+        const d = day as keyof OpeningHours;
+        updatedOpeningDays[d] = !!(profile.opening_hours[d].start && profile.opening_hours[d].end);
+      }
+      setOpeningDays(updatedOpeningDays);
+    }
+  }, [profile]);
 
   const dayTranslations: { [key: string]: string } = {
     monday: 'Lundi',
@@ -120,6 +150,17 @@ const ProfileSetup = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSocialLinkChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setForm(prev => ({
+      ...prev,
+      social_links: {
+        ...prev.social_links,
+        [name]: value,
+      }
+    }));
   };
 
   const handleOpeningHoursChange = (day: keyof OpeningHours, part: 'start' | 'end', value: string) => {
@@ -180,6 +221,7 @@ const ProfileSetup = () => {
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (step !== 3) return;
     setApiError(null);
     const errs = validateProfile(form);
     setErrors(errs);
@@ -205,7 +247,7 @@ const ProfileSetup = () => {
 
     try {
       const res = await fetch(`${API_BASE}/profile`, {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
@@ -214,9 +256,10 @@ const ProfileSetup = () => {
       });
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error(errorData.detail || 'Erreur lors de la création du profil');
+        throw new Error(errorData.detail || 'Erreur lors de la mise à jour du profil');
       }
       await refetch();
+      toast.success('Profil mis à jour avec succès !');
       navigate('/');
     } catch (err: any) {
       setApiError(err.message || 'Erreur inconnue');
@@ -248,9 +291,9 @@ const ProfileSetup = () => {
       </div>
       <Card className="w-full max-w-2xl shadow-xl animate-fade-in">
         <CardHeader>
-          <CardTitle>Complétez votre profil</CardTitle>
+          <CardTitle>Mettre à jour votre profil</CardTitle>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
+        <form>
           <CardContent className="space-y-4">
             {step === 1 && (
               <React.Fragment>
@@ -392,19 +435,19 @@ const ProfileSetup = () => {
                   <div className="grid grid-cols-1 gap-3 mt-2">
                     <div className="flex items-center gap-2">
                       <span className="w-20 text-xs font-medium">LinkedIn</span>
-                      <Input name="linkedin" value={form.social_links.linkedin} onChange={handleChange} className="flex-1" placeholder="Lien vers le profil LinkedIn" />
+                      <Input name="linkedin" value={form.social_links.linkedin} onChange={handleSocialLinkChange} className="flex-1" placeholder="Lien vers le profil LinkedIn" />
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="w-20 text-xs font-medium">Facebook</span>
-                      <Input name="facebook" value={form.social_links.facebook} onChange={handleChange} className="flex-1" placeholder="Lien vers la page Facebook" />
+                      <Input name="facebook" value={form.social_links.facebook} onChange={handleSocialLinkChange} className="flex-1" placeholder="Lien vers la page Facebook" />
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="w-20 text-xs font-medium">Instagram</span>
-                      <Input name="instagram" value={form.social_links.instagram} onChange={handleChange} className="flex-1" placeholder="Lien vers le profil Instagram" />
+                      <Input name="instagram" value={form.social_links.instagram} onChange={handleSocialLinkChange} className="flex-1" placeholder="Lien vers le profil Instagram" />
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="w-20 text-xs font-medium">X</span>
-                      <Input name="x" value={form.social_links.x} onChange={handleChange} className="flex-1" placeholder="Lien vers le profil X" />
+                      <Input name="x" value={form.social_links.x} onChange={handleSocialLinkChange} className="flex-1" placeholder="Lien vers le profil X" />
                     </div>
                   </div>
                 </div>
@@ -420,15 +463,18 @@ const ProfileSetup = () => {
             )}
           </CardContent>
           <CardFooter className="flex flex-col-reverse sm:flex-row sm:justify-between w-full gap-2">
-            {step > 1 && (
-              <Button type="button" variant="outline" onClick={prevStep} className="w-full sm:w-auto">Précédent</Button>
-            )}
-            <div className="w-full sm:w-auto flex justify-end">
+            <Button variant="outline" asChild>
+              <Link to="/">Annuler</Link>
+            </Button>
+            <div className="flex gap-2 w-full sm:w-auto">
+              {step > 1 && (
+                <Button type="button" variant="outline" onClick={prevStep} className="w-full">Précédent</Button>
+              )}
               {step < 3 ? (
-                <Button type="button" onClick={nextStep} className="w-full sm:w-auto">Suivant</Button>
+                <Button type="button" onClick={nextStep} className="w-full">Suivant</Button>
               ) : (
-                <Button type="submit" disabled={loading} className="w-full sm:w-auto">
-                  {loading ? 'Chargement...' : 'Valider le profil'}
+                <Button type="button" onClick={handleSubmit} disabled={loading} className="w-full">
+                  {loading ? 'Enregistrement...' : 'Enregistrer les modifications'}
                 </Button>
               )}
             </div>
@@ -443,4 +489,4 @@ const ProfileSetup = () => {
   );
 };
 
-export default ProfileSetup;
+export default ProfileUpdate;

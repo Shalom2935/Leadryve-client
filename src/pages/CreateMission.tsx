@@ -56,7 +56,7 @@ const CreateMission = () => {
     target_location: '',
     target_sector: '',
     secteur_autre: '',
-    lead_count: 100,
+    lead_count: 10,
     notes: '',
   });
   const [loading, setLoading] = useState(false);
@@ -74,8 +74,18 @@ const CreateMission = () => {
   };
 
   const nextStep = () => {
+    const { name, target_location, target_sector, secteur_autre } = formData;
+    if (!name || !target_location || !target_sector) {
+      toast.error('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
+    if (target_sector === 'Autre' && !secteur_autre) {
+      toast.error("Veuillez préciser le secteur d'activité.");
+      return;
+    }
     if (step < totalSteps) setStep(step + 1);
   };
+
   const prevStep = () => {
     if (step > 1) setStep(step - 1);
   };
@@ -135,7 +145,7 @@ const CreateMission = () => {
               <Input
                 id="name"
                 name="name"
-                placeholder="Ex : Prospection SaaS Douala"
+                placeholder="Ex : Marketing Digital Douala"
                 value={formData.name}
                 onChange={handleChange}
                 required
@@ -190,7 +200,7 @@ const CreateMission = () => {
                 onChange={handleChange}
                 required
               />
-              <p className="text-xs text-slate-500">Recommandé : 100-200 leads pour de meilleurs résultats</p>
+              <p className="text-xs text-slate-500">Recommandé : 10-20 leads pour de meilleurs résultats</p>
             </div>
           </CardContent>
         </>
@@ -228,7 +238,7 @@ const CreateMission = () => {
           <h1 className="text-2xl font-bold tracking-tight">Créer une mission</h1>
           <p className="text-muted-foreground">Paramétrez votre nouvelle campagne de prospection.</p>
         </div>
-        <form onSubmit={handleSubmit}>
+        <div>
           <Card className="border-slate-200 shadow-sm">
             {renderStepIndicator()}
             {renderStepContent()}
@@ -247,7 +257,7 @@ const CreateMission = () => {
                   Suivant <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
               ) : (
-                <Button type="submit" className="bg-leadryve-purple hover:bg-leadryve-purple/90" disabled={loading}>
+                <Button type="button" onClick={handleSubmit} className="bg-leadryve-purple hover:bg-leadryve-purple/90" disabled={loading}>
                   <CheckCircle className="mr-1 h-4 w-4" />
                   {loading ? 'Création...' : 'Lancer la mission'}
                 </Button>
@@ -255,7 +265,7 @@ const CreateMission = () => {
             </CardFooter>
             {error && <div className="text-red-500 text-xs mt-2">{error}</div>}
           </Card>
-        </form>
+        </div>
       </div>
     </AppLayout>
   );

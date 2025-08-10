@@ -47,6 +47,7 @@ import {
 import { toast } from 'sonner';
 import { missionSchema } from '@/lib/schemas';
 import { missionLeadsListSchema } from '@/lib/schemas';
+import { SelectScrollUpButton } from '@/components/ui/select';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -61,7 +62,20 @@ const MissionDetail = () => {
   const [sendNow, setSendNow] = useState(true);
   const [message, setMessage] = useState('');
   const [reasonOpenId, setReasonOpenId] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 640;
+    }
+    return false;
+  });
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   useEffect(() => {
     const fetchMission = async () => {
       setLoading(true);
@@ -156,6 +170,7 @@ const MissionDetail = () => {
   }
 
   return (
+    <>
     <AppLayout>
       <div className="space-y-8">
         <div className="flex items-center justify-between">
@@ -179,37 +194,37 @@ const MissionDetail = () => {
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>Mission Details</CardTitle>
+              <CardTitle>Détails de la mission</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-col gap-3">
                 <div className="flex items-start gap-2">
                   <MapPin size={18} className="text-leadryve-purple mt-0.5" />
                   <div>
-                    <p className="font-medium">Location</p>
+                    <p className="font-medium">Localisation</p>
                     <p className="text-sm">{mission.target_location}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
                   <Target size={18} className="text-leadryve-purple mt-0.5" />
                   <div>
-                    <p className="font-medium">Target Industry</p>
+                    <p className="font-medium">Secteur cible</p>
                     <p className="text-sm">{mission.target_sector}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
                   <Users size={18} className="text-leadryve-purple mt-0.5" />
                   <div>
-                    <p className="font-medium">Leads Requested</p>
+                    <p className="font-medium">Leads Demandés</p>
                     <p className="text-sm">{mission.lead_count}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
                   <Clock size={18} className="text-leadryve-purple mt-0.5" />
                   <div>
-                    <p className="font-medium">Progress</p>
+                    <p className="font-medium">Progression</p>
                     <Progress value={mission.progress} className="h-2" />
-                    <p className="text-sm">{mission.progress}% Completed</p>
+                    <p className="text-sm">{mission.progress}% Terminée</p>
                   </div>
                 </div>
               </div>
@@ -231,7 +246,7 @@ const MissionDetail = () => {
               left: 0,
               width: '100vw',
               height: '100vh',
-              background: 'rgba(40, 0, 80, 0.10)',
+              background: 'rgba(0, 0, 0, 0.4)',
               zIndex: 9999,
               display: 'flex',
               alignItems: 'center',
@@ -247,7 +262,6 @@ const MissionDetail = () => {
                 width: '95%',
                 maxHeight: '80vh',
                 overflowY: 'auto',
-                border: '1.5px solid #c3b6e6',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
@@ -258,10 +272,9 @@ const MissionDetail = () => {
                 fontSize: '1.25rem',
                 fontWeight: 700,
                 marginBottom: 18,
-                color: '#6c3fc7',
                 letterSpacing: '0.01em',
                 textAlign: 'center',
-              }}>Raison du lead</h3>
+              }}>Rapport sur {leads.find(l => l.id === reasonOpenId)?.company_name}</h3>
               <div style={{
                 width: '100%',
                 marginBottom: 12,
@@ -271,10 +284,10 @@ const MissionDetail = () => {
                   return selectedLead?.reason?.split('\n').map((paragraph: string, idx: number) => (
                     <p key={idx} style={{
                       marginBottom: 10,
-                      color: '#3d246b',
+                      color: '#333',
                       fontSize: '1rem',
                       lineHeight: 1.6,
-                      background: '#f3edff',
+                      background: '#f9f9f9',
                       borderRadius: 8,
                       padding: '10px 14px',
                       wordBreak: 'break-word',
@@ -287,10 +300,7 @@ const MissionDetail = () => {
                 size="sm"
                 style={{
                   marginTop: 8,
-                  background: '#e9e3fa',
-                  color: '#6c3fc7',
                   borderRadius: 8,
-                  border: '1px solid #c3b6e6',
                   fontWeight: 500,
                   padding: '6px 18px',
                 }}
@@ -301,6 +311,7 @@ const MissionDetail = () => {
             </div>
           </div>
         )}
+        
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
                 <Input
                   type="search"
@@ -316,124 +327,149 @@ const MissionDetail = () => {
 
           <Card>
             <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Company</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead>Score</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Reason</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {leads.map((lead) => (
-                    <TableRow key={lead.id}>
-                      <TableCell className="font-medium">{lead.company_name}</TableCell>
-                      <TableCell>{lead.address}</TableCell>
-                      <TableCell>
-                        <Badge className={getScoreClass(lead.score)}>
-                          {lead.score}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {lead.email ? (
-                          <span className="flex items-center gap-1"><Mail size={16} className="text-slate-600" />{lead.email}</span>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        {lead.phone ? (
-                          <span className="flex items-center gap-1"><Phone size={16} className="text-slate-600" />{lead.phone}</span>
-                        ) : (
-                          <span className="text-slate-400">—</span>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                          {lead.reason ? (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setReasonOpenId(lead.id)}
-                              className="underline text-blue-600"
-                            >
-                              Voir la raison
-                            </Button>
-                          ) : (
-                            <span className="text-slate-400">—</span>
-                          )}
-                                                </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => openContactModal(lead)}
-                          >
-                            Contact
-                          </Button>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>View Details</DropdownMenuItem>
-                              <DropdownMenuItem>Mark as Qualified</DropdownMenuItem>
-                              <DropdownMenuItem className="text-red-600">Remove Lead</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+            {isMobile ? (
+        <div className="flex flex-col gap-4">
+          {leads.map((lead) => (
+            <Card key={lead.id}>
+              <CardContent className="p-4 space-y-2">
+                <div className="font-bold text-lg">{lead.company_name}</div>
+                <div className="text-sm text-slate-600">{lead.address}</div>
+                <div>
+                  <Badge
+                                className={
+                                  lead.score >= 0.8 ? "bg-green-100 text-green-700" :
+                                  lead.score >= 0.5 ? "bg-yellow-100 text-yellow-700" :
+                                  "bg-red-100 text-red-700"
+                                }
+                              >
+                                {lead.score * 100}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Mail size={16} /> {lead.email || <span className="text-slate-400">—</span>}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Phone size={16} /> {lead.phone || <span className="text-slate-400">—</span>}
+                </div>
+                <div>
+                  {lead.reason ? (
+                    <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setReasonOpenId(lead.id)}
+                    className=" bg-none text-purple-600 px-3 py-1 font-semibold hover:text-purple-400 transition"
+                  >
+                    Afficher le rapport
+                  </Button>
+                  ) : (
+                    <span className="text-slate-400">—</span>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => openContactModal(lead)}>Contact</Button>
+                  {/* autres actions... */}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Entreprise</TableHead>
+                          <TableHead>Localisation</TableHead>
+                          <TableHead>Score</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Téléphone</TableHead>
+                          <TableHead>Rapport</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {leads.map((lead) => (
+                          <TableRow key={lead.id}>
+                            <TableCell className="font-medium">{lead.company_name}</TableCell>
+                            <TableCell>{lead.address}</TableCell>
+                            <TableCell>
+                              <Badge
+                                className={
+                                  lead.score >= 0.8 ? "bg-green-100 text-green-700" :
+                                  lead.score >= 0.5 ? "bg-yellow-100 text-yellow-700" :
+                                  "bg-red-100 text-red-700"
+                                }
+                              >
+                                {lead.score * 100}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {lead.email ? (
+                                <span className="flex items-center gap-1"><Mail size={16} className="text-slate-600" />{lead.email}</span>
+                              ) : (
+                                <span className="text-slate-400">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {lead.phone ? (
+                                <span className="flex items-center gap-1"><Phone size={16} className="text-slate-600" />{lead.phone}</span>
+                              ) : (
+                                <span className="text-slate-400">—</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                                {lead.reason ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setReasonOpenId(lead.id)}
+                                    className=" bg-none text-purple-600 px-3 py-1 font-semibold hover:text-purple-400 transition"
+                                  >
+                                    Afficher le rapport
+                                  </Button>
+                                ) : (
+                                  <span className="text-slate-400">—</span>
+                                )}
+                                                      </TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-2">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => openContactModal(lead)}
+                                >
+                                  Contact
+                                </Button>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm">
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem>View Details</DropdownMenuItem>
+                                    <DropdownMenuItem>Mark as Qualified</DropdownMenuItem>
+                                    <DropdownMenuItem className="text-red-600">Remove Lead</DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+        </div>
+      )}  
             </CardContent>
           </Card>
         </div>
 
-        {/* Contact Lead Dialog */}
-        <Dialog open={contactModalOpen} onOpenChange={setContactModalOpen}>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Contact {selectedLead?.companyName}</DialogTitle>
-              <DialogDescription>
-                Customize your message before sending.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <Textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Enter your message here..."
-                className="min-h-32"
-              />
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="send-now"
-                  checked={sendNow}
-                  onCheckedChange={setSendNow}
-                />
-                <Label htmlFor="send-now">Send message now</Label>
-              </div>
-            </div>
-            <DialogFooter className="flex space-x-2 sm:space-x-0">
-              <Button type="button" variant="outline" onClick={() => setContactModalOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="button" onClick={handleSendMessage}>
-                {sendNow ? 'Send Message' : 'Schedule Message'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        
       </div>
-    </AppLayout>
+
+
+  </AppLayout>
+  </>
   );
 };
 

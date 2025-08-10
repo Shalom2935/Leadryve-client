@@ -4,7 +4,7 @@ import { useAuth } from './useAuth';
 
 interface Profile {
   name: string;
-  companyName: string;
+  company_name: string;
   role: string;
   services: string[];
   geo_coverage: string[];
@@ -19,8 +19,8 @@ interface Profile {
     sunday: { start: string; end: string };
   };
   address: string;
-  email: string;
-  phone: string;
+  company_email: string;
+  phone_number: string;
   social_links: {  
     website?: string;
     linkedin?: string;

@@ -30,14 +30,11 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
+import { useProfile } from '@/hooks/useProfile';
+import { Link } from 'react-router-dom';
 
 const Settings = () => {
-  const [formData, setFormData] = useState({
-    fullName: 'John Smith',
-    email: 'john@example.com',
-    company: 'Example Corp',
-    phone: '+1 (555) 123-4567',
-  });
+  const { profile } = useProfile();
 
   const [notifications, setNotifications] = useState({
     email: true,
@@ -48,26 +45,23 @@ const Settings = () => {
     responses: true,
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
   const handleToggleChange = (key: string) => {
     setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleSaveProfile = () => {
-    toast.success('Profile information saved successfully!');
+  const getInitials = (name: string) => {
+    if (!name) return '';
+    const names = name.split(' ');
+    return names.map((n) => n[0]).join('');
   };
 
   return (
     <AppLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Paramètres</h1>
           <p className="text-muted-foreground">
-            Manage your account preferences and settings
+            Gérez les préférences et les paramètres de votre compte
           </p>
         </div>
 
@@ -75,95 +69,90 @@ const Settings = () => {
           <TabsList className="grid w-full max-w-md grid-cols-2">
             <TabsTrigger value="account">
               <UserCircle className="h-4 w-4 mr-2" />
-              Account
+              Compte
             </TabsTrigger>
-            <TabsTrigger value="plan">
+            <TabsTrigger value="plan" disabled>
               <CreditCard className="h-4 w-4 mr-2" />
-              Plan & Usage
+              Forfait & Utilisation
             </TabsTrigger>
-            {/* <TabsTrigger value="preferences">
-              <Bell className="h-4 w-4 mr-2" />
-              Preferences
-            </TabsTrigger> */}
           </TabsList>
           
-          {/* Account Information Tab */}
           <TabsContent value="account" className="space-y-4 mt-6">
             <Card>
               <CardHeader>
-                <CardTitle>Profile Information</CardTitle>
-                <CardDescription>
-                  Update your personal details and company information
-                </CardDescription>
+                <CardTitle>Informations du profil</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4">
                   <Avatar className="h-16 w-16">
-                    <AvatarImage src="" alt="John Smith" />
-                    <AvatarFallback className="bg-leadryve-purple text-white text-lg">JS</AvatarFallback>
+                    <AvatarImage src="" alt={profile?.name} />
+                    <AvatarFallback className="bg-leadryve-purple text-white text-lg">
+                      {profile ? getInitials(profile.name) : ''}
+                    </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <Button variant="outline" size="sm">
-                      Change Photo
-                    </Button>
-                  </div>
                 </div>
                 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name</Label>
+                    <Label htmlFor="fullName">Nom complet</Label>
                     <Input
                       id="fullName"
                       name="fullName"
-                      value={formData.fullName}
-                      onChange={handleInputChange}
+                      value={profile?.name || ''}
+                      readOnly
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">E-mail</Label>
                     <Input
                       id="email"
                       name="email"
                       type="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
+                      value={profile?.company_email || ''}
+                      readOnly
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="company">Company</Label>
+                    <Label htmlFor="company">Entreprise</Label>
                     <Input
                       id="company"
                       name="company"
-                      value={formData.company}
-                      onChange={handleInputChange}
+                      value={profile?.company_name || ''}
+                      readOnly
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Phone</Label>
+                    <Label htmlFor="phone">Téléphone</Label>
                     <Input
                       id="phone"
                       name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
+                      value={profile?.phone_number || ''}
+                      readOnly
                     />
                   </div>
                 </div>
               </CardContent>
               <CardFooter>
-                <Button onClick={handleSaveProfile}>Save Changes</Button>
+                <p className="text-sm text-blue-600">
+                  Pour modifier vos informations de profil, veuillez vous rendre sur la{' '}
+                  <Link to="/profile" className="font-semibold hover:underline">
+                    page de profil
+                  </Link>
+                  .
+                </p>
               </CardFooter>
             </Card>
             
             <Card>
               <CardHeader>
-                <CardTitle>Security</CardTitle>
+                <CardTitle>Sécurité</CardTitle>
                 <CardDescription>
-                  Manage your password and security settings
+                  Gérez votre mot de passe et vos paramètres de sécurité
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="current-password">Current Password</Label>
+                  <Label htmlFor="current-password">Mot de passe actuel</Label>
                   <Input
                     id="current-password"
                     type="password"
@@ -172,7 +161,7 @@ const Settings = () => {
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="new-password">New Password</Label>
+                    <Label htmlFor="new-password">Nouveau mot de passe</Label>
                     <Input
                       id="new-password"
                       type="password"
@@ -180,7 +169,7 @@ const Settings = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Confirm New Password</Label>
+                    <Label htmlFor="confirm-password">Confirmer le nouveau mot de passe</Label>
                     <Input
                       id="confirm-password"
                       type="password"
@@ -190,43 +179,22 @@ const Settings = () => {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button variant="outline">Update Password</Button>
+                <Button variant="outline">Mettre à jour le mot de passe</Button>
               </CardFooter>
             </Card>
-            
-            {/* <Card>
-              <CardHeader>
-                <CardTitle>Export Data</CardTitle>
-                <CardDescription>
-                  Download all your missions and lead data
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <p className="text-sm text-slate-500">
-                  Your export will include all your missions, leads, and campaign performance data.
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export All Data
-                </Button>
-              </CardFooter>
-            </Card> */}
           </TabsContent>
           
-          {/* Plan & Usage Tab */}
-          <TabsContent value="plan" className="space-y-4 mt-6">
+          {/* <TabsContent value="plan" className="space-y-4 mt-6">
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div>
-                    <CardTitle>Current Plan</CardTitle>
+                    <CardTitle>Forfait Actuel</CardTitle>
                     <CardDescription>
-                      Your subscription plan and usage
+                      Votre forfait et votre utilisation
                     </CardDescription>
                   </div>
-                  <Badge className="bg-deepinsight-purple font-medium">Pro Plan</Badge>
+                  <Badge className="bg-deepinsight-purple font-medium">Forfait Pro</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -234,65 +202,65 @@ const Settings = () => {
                   <div>
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-sm font-medium">Leads (435/650)</span>
-                      <span className="text-xs text-slate-500">67% used</span>
+                      <span className="text-xs text-slate-500">67% utilisé</span>
                     </div>
                     <Progress value={67} className="h-2" />
                   </div>
                   <div>
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium">Emails (245/500)</span>
-                      <span className="text-xs text-slate-500">49% used</span>
+                      <span className="text-sm font-medium">E-mails (245/500)</span>
+                      <span className="text-xs text-slate-500">49% utilisé</span>
                     </div>
                     <Progress value={49} className="h-2" />
                   </div>
                   <div>
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-sm font-medium">Active Missions (3/5)</span>
-                      <span className="text-xs text-slate-500">60% used</span>
+                      <span className="text-sm font-medium">Missions Actives (3/5)</span>
+                      <span className="text-xs text-slate-500">60% utilisé</span>
                     </div>
                     <Progress value={60} className="h-2" />
                   </div>
                 </div>
                 
                 <div className="bg-slate-50 rounded-lg p-4">
-                  <h3 className="font-semibold mb-2">Pro Plan Features</h3>
+                  <h3 className="font-semibold mb-2">Fonctionnalités du Forfait Pro</h3>
                   <ul className="space-y-2 text-sm">
                     <li className="flex items-center gap-2">
                       <Shield className="h-4 w-4 text-green-600" />
-                      Up to 5 active missions
+                      Jusqu'à 5 missions actives
                     </li>
                     <li className="flex items-center gap-2">
                       <Shield className="h-4 w-4 text-green-600" />
-                      650 leads per month
+                      650 leads par mois
                     </li>
                     <li className="flex items-center gap-2">
                       <Shield className="h-4 w-4 text-green-600" />
-                      500 email outreach credits
+                      500 crédits d'envoi d'e-mails
                     </li>
                     <li className="flex items-center gap-2">
                       <Shield className="h-4 w-4 text-green-600" />
-                      LinkedIn integration
+                      Intégration LinkedIn
                     </li>
                     <li className="flex items-center gap-2">
                       <Shield className="h-4 w-4 text-green-600" />
-                      Advanced lead filters
+                      Filtres de leads avancés
                     </li>
                   </ul>
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between">
                 <div className="text-sm text-slate-500">
-                  Your plan renews on May 1, 2025
+                  Votre forfait se renouvelle le 1er mai 2025
                 </div>
-                <Button>Upgrade Plan</Button>
+                <Button>Mettre à niveau le forfait</Button>
               </CardFooter>
             </Card>
             
             <Card>
               <CardHeader>
-                <CardTitle>Billing Information</CardTitle>
+                <CardTitle>Informations de Facturation</CardTitle>
                 <CardDescription>
-                  Manage your payment methods and billing details
+                  Gérez vos méthodes de paiement et vos détails de facturation
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -301,24 +269,24 @@ const Settings = () => {
                     <div className="flex items-center gap-2">
                       <CreditCard className="h-5 w-5 text-slate-500" />
                       <div>
-                        <p className="font-medium">Visa ending in 4242</p>
-                        <p className="text-xs text-slate-500">Expires 12/2025</p>
+                        <p className="font-medium">Visa se terminant par 4242</p>
+                        <p className="text-xs text-slate-500">Expire le 12/2025</p>
                       </div>
                     </div>
-                    <Badge>Default</Badge>
+                    <Badge>Défaut</Badge>
                   </div>
                 </div>
                 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="billing-name">Name on Card</Label>
+                    <Label htmlFor="billing-name">Nom sur la carte</Label>
                     <Input
                       id="billing-name"
                       defaultValue="John Smith"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="billing-email">Billing Email</Label>
+                    <Label htmlFor="billing-email">E-mail de facturation</Label>
                     <Input
                       id="billing-email"
                       type="email"
@@ -326,14 +294,14 @@ const Settings = () => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="company-name">Company Name</Label>
+                    <Label htmlFor="company-name">Nom de l'entreprise</Label>
                     <Input
                       id="company-name"
                       defaultValue="Example Corp"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="country">Country</Label>
+                    <Label htmlFor="country">Pays</Label>
                     <Input
                       id="country"
                       defaultValue="United States"
@@ -342,11 +310,11 @@ const Settings = () => {
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between">
-                <Button variant="outline">View Billing History</Button>
-                <Button variant="default">Update Payment Method</Button>
+                <Button variant="outline">Voir l'historique de facturation</Button>
+                <Button variant="default">Mettre à jour le moyen de paiement</Button>
               </CardFooter>
             </Card>
-          </TabsContent>
+          </TabsContent> */}
           
           {/* Preferences Tab */}
           <TabsContent value="preferences" className="space-y-4 mt-6">

@@ -14,6 +14,7 @@ import {
 import { Link } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import {
   Tooltip,
   TooltipContent,
@@ -29,6 +30,13 @@ interface TopbarProps {
 export const Topbar: React.FC<TopbarProps> = ({ children, onToggleSidebar }) => {
   const isMobile = useIsMobile();
   const { logout } = useAuth();
+  const { profile } = useProfile();
+
+  const getInitials = (name: string) => {
+    if (!name) return '';
+    const names = name.split(' ');
+    return names.map((n) => n[0]).join('');
+  };
   
   return (
     <header className="h-16 border-b border-slate-200 bg-white px-4 md:px-6 flex items-center justify-between shadow-sm">
@@ -65,20 +73,22 @@ export const Topbar: React.FC<TopbarProps> = ({ children, onToggleSidebar }) => 
             <Button variant="ghost" className="relative h-8 w-8 rounded-full" size="icon">
               <Avatar className="h-8 w-8">
                 <AvatarImage src="" alt="Utilisateur" />
-                <AvatarFallback className="bg-leadryve-purple text-white">JS</AvatarFallback>
+                <AvatarFallback className="bg-leadryve-purple text-white">
+                  {profile ? getInitials(profile.name) : '...'}
+                </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel className="font-normal">
               <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium">John Smith</p>
-                <p className="text-xs text-slate-500">john@example.com</p>
+                <p className="text-sm font-medium">{profile?.name}</p>
+                <p className="text-xs text-slate-500">{profile?.company_email}</p>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              Profil
+            <DropdownMenuItem asChild>
+              <Link to="/profile-update">Profil</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
               Paramètres du compte

@@ -16,12 +16,15 @@ import ConfirmEmail from "./pages/ConfirmEmail";
 import { RequireAuth, AuthProvider } from "@/hooks/useAuth";
 import { ProfileProvider } from "@/hooks/useProfile";
 
+import ProfileUpdate from "./pages/ProfileUpdate";
+
 const queryClient = new QueryClient();
 
 const AppRoutes = () => (
   <Routes>
     <Route path="/auth" element={<Auth />} />
     <Route path="/profile" element={<RequireAuth><ProfileSetup /></RequireAuth>} />
+    <Route path="/profile-update" element={<RequireAuth><ProfileUpdate /></RequireAuth>} />
     <Route path="/auth/confirm-email" element={<ConfirmEmail />} />
     <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
     <Route path="/missions" element={<RequireAuth><Missions /></RequireAuth>} />
