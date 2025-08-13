@@ -250,7 +250,7 @@ const ProfileSetup = () => {
         <CardHeader>
           <CardTitle>Complétez votre profil</CardTitle>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
+        <form>
           <CardContent className="space-y-4">
             {step === 1 && (
               <React.Fragment>
@@ -427,7 +427,7 @@ const ProfileSetup = () => {
               {step < 3 ? (
                 <Button type="button" onClick={nextStep} className="w-full sm:w-auto">Suivant</Button>
               ) : (
-                <Button type="submit" disabled={loading} className="w-full sm:w-auto">
+                <Button type="button" onClick={handleSubmit} disabled={loading} className="w-full sm:w-auto">
                   {loading ? 'Chargement...' : 'Valider le profil'}
                 </Button>
               )}
