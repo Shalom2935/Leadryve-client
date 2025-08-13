@@ -250,7 +250,7 @@ const ProfileSetup = () => {
         <CardHeader>
           <CardTitle>Complétez votre profil</CardTitle>
         </CardHeader>
-        <form onSubmit={handleSubmit} noValidate>
+        <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {step === 1 && (
               <React.Fragment>
