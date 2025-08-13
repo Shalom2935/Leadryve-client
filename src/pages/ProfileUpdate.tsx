@@ -30,10 +30,10 @@ type OpeningHours = {
 };
 
 type SocialLinks = {
-    linkedin: string;
-    facebook: string;
-    instagram: string;
-    x: string;
+    linkedin?: string;
+    facebook?: string;
+    instagram?: string;
+    x?: string;
 };
 type ProfileFormFields = {
   name: string;
@@ -120,8 +120,8 @@ const ProfileUpdate = () => {
         services: profile.services || [''],
         geo_coverage: profile.geo_coverage || [],
         employees: profile.employees || '',
-        openingHours: profile.opening_hours || { ...DEFAULT_OPENING_HOURS },
-        address: profile.location || '',
+        openingHours: profile.openingHours || { ...DEFAULT_OPENING_HOURS },
+        address: profile.address || '',
         email: profile.company_email || '',
         phone: profile.phone_number || '',
         website: profile.website || '',
@@ -130,9 +130,9 @@ const ProfileUpdate = () => {
       });
 
       const updatedOpeningDays: any = {};
-      for (const day in profile.opening_hours) {
+      for (const day in profile.openingHours) {
         const d = day as keyof OpeningHours;
-        updatedOpeningDays[d] = !!(profile.opening_hours[d].start && profile.opening_hours[d].end);
+        updatedOpeningDays[d] = !!(profile.openingHours[d].start && profile.openingHours[d].end);
       }
       setOpeningDays(updatedOpeningDays);
     }

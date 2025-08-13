@@ -7,6 +7,7 @@ interface Profile {
   company_name: string;
   role: string;
   services: string[];
+  sector: string;
   geo_coverage: string[];
   employees: string;
   openingHours: {
@@ -21,8 +22,8 @@ interface Profile {
   address: string;
   company_email: string;
   phone_number: string;
+  website: string;
   social_links: {  
-    website?: string;
     linkedin?: string;
     facebook?: string;
     instagram?: string;
