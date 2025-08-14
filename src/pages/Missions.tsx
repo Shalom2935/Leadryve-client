@@ -145,7 +145,7 @@ const Missions = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE || '/api'}/missions?limit=${limit}&skip=${skip}/`, {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE || '/api'}/missions?limit=${limit}&skip=${skip}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json',
