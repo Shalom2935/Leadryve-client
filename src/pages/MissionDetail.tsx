@@ -82,7 +82,7 @@ const MissionDetail = () => {
       setError('');
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${API_BASE}/missions/${id}`, {
+        const res = await fetch(`${API_BASE}/missions/${id}/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -106,7 +106,7 @@ const MissionDetail = () => {
       if (!id) return;
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${API_BASE}/missions/${id}/leads`, {
+        const res = await fetch(`${API_BASE}/missions/${id}/leads/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

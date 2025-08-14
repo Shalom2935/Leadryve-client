@@ -56,7 +56,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE || '/api'}/profile`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE || '/api'}/profile/`, {
         method: 'GET',
         headers: { Authorization: `Bearer ${token}` },
       });

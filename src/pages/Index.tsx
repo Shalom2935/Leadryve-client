@@ -22,7 +22,7 @@ const Dashboard = () => {
       setLoadingStats(true);
       setStatsError(null);
       try {
-        const res = await fetch(`${API_BASE}/dashboard/summary`, {
+        const res = await fetch(`${API_BASE}/dashboard/summary/`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json',

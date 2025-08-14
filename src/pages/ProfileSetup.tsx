@@ -204,7 +204,7 @@ const ProfileSetup = () => {
     };
 
     try {
-      const res = await fetch(`${API_BASE}/profile`, {
+      const res = await fetch(`${API_BASE}/profile/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

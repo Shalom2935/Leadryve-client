@@ -246,7 +246,7 @@ const ProfileUpdate = () => {
     };
 
     try {
-      const res = await fetch(`${API_BASE}/profile`, {
+      const res = await fetch(`${API_BASE}/profile/`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
