@@ -135,7 +135,7 @@ const Settings = () => {
               <CardFooter>
                 <p className="text-sm text-blue-600">
                   Pour modifier vos informations de profil, veuillez vous rendre sur la{' '}
-                  <Link to="/profile" className="font-semibold hover:underline">
+                  <Link to="/profile-update" className="font-semibold hover:underline">
                     page de profil
                   </Link>
                   .
