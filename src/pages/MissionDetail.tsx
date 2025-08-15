@@ -337,12 +337,12 @@ const MissionDetail = () => {
                 <div>
                   <Badge
                                 className={
-                                  lead.score >= 0.8 ? "bg-green-100 text-green-700" :
-                                  lead.score >= 0.5 ? "bg-yellow-100 text-yellow-700" :
+                                  lead.score >= 80 ? "bg-green-100 text-green-700" :
+                                  lead.score >= 50 ? "bg-yellow-100 text-yellow-700" :
                                   "bg-red-100 text-red-700"
                                 }
                               >
-                                {lead.score * 100}
+                                {lead.score}
                   </Badge>
                 </div>
                 <div className="flex items-center gap-2">
@@ -395,12 +395,12 @@ const MissionDetail = () => {
                             <TableCell>
                               <Badge
                                 className={
-                                  lead.score >= 0.8 ? "bg-green-100 text-green-700" :
-                                  lead.score >= 0.5 ? "bg-yellow-100 text-yellow-700" :
+                                  lead.score >= 80 ? "bg-green-100 text-green-700" :
+                                  lead.score >= 50 ? "bg-yellow-100 text-yellow-700" :
                                   "bg-red-100 text-red-700"
                                 }
                               >
-                                {lead.score * 100}
+                                {lead.score}
                               </Badge>
                             </TableCell>
                             <TableCell>

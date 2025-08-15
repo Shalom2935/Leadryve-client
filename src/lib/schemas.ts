@@ -68,7 +68,7 @@ export const missionLeadSchema = z.object({
   address: z.string().optional(),
   score: z.number(),
   email: z.string().email().optional(),
-  phone: z.string().optional(),
+  phone: z.array(z.string().optional()),
   reason: z.string().optional(),
   created_at: z.string(), // ISO date
 });
@@ -93,7 +93,7 @@ export const profileSchema = z.object({
   }),
   address: z.string().optional(),
   email: z.string().email('Email valide requis'),
-  phone: z.string().optional(),
+  phone: z.array(z.string().optional()),
   website: z.string().optional(),
   socialNetworks: z.object({
     linkedin: z.string().optional(),
