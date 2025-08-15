@@ -262,6 +262,7 @@ const MissionDetail = () => {
                 width: '95%',
                 maxHeight: '80vh',
                 overflowY: 'auto',
+                overflowX: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
