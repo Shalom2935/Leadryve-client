@@ -65,7 +65,7 @@ export const Sidebar: React.FC<{ onCollapse?: (collapsed: boolean) => void }> = 
         )}
         {collapsed && !isMobile && (
           <Link to="/" className="flex items-center justify-center w-full">
-            <img src="/favicon.ico" alt="Leadryve Icon" className="h-8 w-8" />
+            <img src="/favicon.png" alt="Leadryve Icon" className="h-8 w-8" />
           </Link>
         )}
         {!isMobile && (
