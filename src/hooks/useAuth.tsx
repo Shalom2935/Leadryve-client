@@ -7,6 +7,7 @@ const AuthContext = createContext<{
   login: (token: string, profileExists: boolean) => void;
   logout: () => void;
   token: string | null;
+  isLoading: boolean; // Added isLoading
 } | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -45,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated: !!token, login, logout, token }}>
+    <AuthContext.Provider value={{ isAuthenticated: !!token, login, logout, token, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
@@ -70,4 +71,3 @@ export function RequireAuth({ children }: { children: JSX.Element }) {
   if (isLoading || !isAuthenticated) return null;
   return children;
 }
-
