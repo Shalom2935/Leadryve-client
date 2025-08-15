@@ -91,7 +91,7 @@ export const Topbar: React.FC<TopbarProps> = ({ children, onToggleSidebar }) => 
               <Link to="/profile-update">Profil</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              Paramètres du compte
+              <Link to="/settings">Paramètres du compte</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout}>

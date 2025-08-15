@@ -256,7 +256,7 @@ const MissionDetail = () => {
             <div
               style={{
                 background: '#fff',
-                borderRadius: 20,
+                borderRadius: '20px 20px 20px',
                 padding: '32px 28px',
                 maxWidth: 520,
                 width: '95%',
@@ -287,7 +287,7 @@ const MissionDetail = () => {
                       color: '#333',
                       fontSize: '1rem',
                       lineHeight: 1.6,
-                      background: '#f9f9f9',
+                      background: '',
                       borderRadius: 8,
                       padding: '10px 14px',
                       wordBreak: 'break-word',
