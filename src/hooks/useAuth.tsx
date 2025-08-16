@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext, createContext, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProfile } from './useProfile'; // Import useProfile
+import Spinner from '../components/ui/spinner'; // Import the Spinner component
 
 // Le contexte inclut maintenant une fonction login qui gère la redirection
 const AuthContext = createContext<{
@@ -55,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isLoading = isLoadingAuth || isLoadingProfile;
 
   if (isLoading) {
-    return null; // Or a loading spinner
+    return <Spinner />; // Render the spinner component when loading
   }
 
   return (
