@@ -71,22 +71,22 @@ export function RequireAuth({ children }: { children: JSX.Element }) {
   const isLoading = isLoadingAuth || isLoadingProfile;
 
   useEffect(() => {
-    if (isLoading) {
-      return; // Wait for loading to finish
-    }
-
-    if (!isAuthenticated) {
-      navigate('/auth'); // Redirect to login if not authenticated
-    } else if (!profile) { // Check if profile exists using the profile object
-      // If authenticated but profile doesn't exist, redirect to profile setup
-      // Only redirect if not already on the profile page to avoid loops
-      if (window.location.pathname !== '/profile') {
-        navigate('/profile');
+    // Only proceed with redirection logic if loading is complete
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        navigate('/auth'); // Redirect to login if not authenticated
+      } else if (!isLoadingProfile && !profile) { // Check if profile exists using the profile object
+        // If authenticated but profile doesn't exist, redirect to profile setup
+        // Only redirect if not already on the profile page to avoid loops
+        if (window.location.pathname !== '/profile') {
+          navigate('/profile');
+        }
       }
     }
-  }, [isAuthenticated, profile, isLoading, navigate]); // Add profile and isLoading to dependencies
+  }, [isAuthenticated, profile, isLoading, isLoadingProfile, navigate]); // Add profile and isLoading to dependencies
 
-  if (isLoading) return null; // Render null if still loading
+  // Render null if still loading to prevent flickering or incorrect UI
+  if (isLoading) return null;
 
   // If authenticated and profile exists, render children.
   // If authenticated and profile does not exist, the useEffect above will handle redirection.

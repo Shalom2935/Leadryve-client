@@ -83,6 +83,7 @@ export const ProfileProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   useEffect(() => {
     if (isAuthenticated) {
+      setIsLoading(true); // Add this line to ensure loading state is true immediately
       fetchProfile();
     } else {
       setProfile(null);
