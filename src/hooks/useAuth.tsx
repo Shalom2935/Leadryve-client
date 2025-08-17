@@ -3,24 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { useProfile } from './useProfile'; // Import useProfile
 import Spinner from '../components/ui/spinner'; // Import the Spinner component
 
-// Le contexte inclut maintenant une fonction login qui gère la redirection
 const AuthContext = createContext<{
   isAuthenticated: boolean;
-  login: (token: string, profileExists: boolean) => void;
+  login: (token: string) => void; // Removed profileExists from login signature
   logout: () => void;
   token: string | null;
-  isLoadingAuth: boolean; // Renamed to avoid conflict
-  profileExists: boolean;
+  isLoadingAuth: boolean;
 } | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { isLoading: isLoadingProfile } = useProfile(); // Get isLoading from useProfile
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
-  const [isLoadingAuth, setIsLoadingAuth] = useState<boolean>(true); // Renamed state
-  const [profileExists, setProfileExists] = useState<boolean>(() => {
-    const storedProfileExists = localStorage.getItem('profileExists');
-    return storedProfileExists ? JSON.parse(storedProfileExists) : false;
-  });
+  const [isLoadingAuth, setIsLoadingAuth] = useState<boolean>(true);
+  // Removed profileExists state from AuthProvider
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,39 +22,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (storedToken) {
       setToken(storedToken);
     }
-    setIsLoadingAuth(false); // Use renamed state
+    setIsLoadingAuth(false);
   }, []);
 
-  const login = useCallback((newToken: string, profileExists: boolean) => {
+  const login = useCallback((newToken: string) => { // Removed profileExists parameter
     localStorage.setItem('token', newToken);
     setToken(newToken);
-    localStorage.setItem('profileExists', JSON.stringify(profileExists));
-    setProfileExists(profileExists);
-    if (profileExists) {
-      navigate('/');
-    } else {
-      navigate('/profile');
-    }
+    // Removed localStorage.setItem('profileExists', JSON.stringify(profileExists));
+    // Removed setProfileExists(profileExists);
+    // The logic for redirecting based on profile existence will be handled by ProfileProvider
+    navigate('/'); // Default redirect to home, ProfileProvider will handle profile-specific redirects
   }, [navigate]);
 
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('userProfile');
-    localStorage.removeItem('profileExists');
+    // Removed localStorage.removeItem('profileExists');
     setToken(null);
-    setProfileExists(false);
+    // Removed setProfileExists(false);
     navigate('/auth');
   }, [navigate]);
 
-  // Combine loading states
-  const isLoading = isLoadingAuth || isLoadingProfile;
+  const isLoading = isLoadingAuth;
 
   if (isLoading) {
-    return <Spinner />; // Render the spinner component when loading
+    return <Spinner />;
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated: !!token, login, logout, token, isLoadingAuth: isLoadingAuth, profileExists }}>
+    <AuthContext.Provider value={{ isAuthenticated: !!token, login, logout, token, isLoadingAuth: isLoadingAuth }}>
       {children}
     </AuthContext.Provider>
   );
@@ -73,12 +63,12 @@ export function useAuth() {
 }
 
 export function RequireAuth({ children }: { children: JSX.Element }) {
-  const { isAuthenticated, profileExists } = useAuth(); // Destructure profileExists
-  const { isLoading: isLoadingProfile } = useProfile(); // Get profile loading state
+  const { isAuthenticated, isLoadingAuth } = useAuth(); // Removed profileExists from destructuring
+  const { profile, isLoading: isLoadingProfile } = useProfile(); // Import profile and its loading state
   const navigate = useNavigate();
 
-  // Determine overall loading state
-  const isLoading = !isAuthenticated || isLoadingProfile; // If not authenticated, it's loading until redirected to auth. If authenticated, wait for profile.
+  // Determine overall loading state by combining auth and profile loading
+  const isLoading = isLoadingAuth || isLoadingProfile;
 
   useEffect(() => {
     if (isLoading) {
@@ -87,14 +77,14 @@ export function RequireAuth({ children }: { children: JSX.Element }) {
 
     if (!isAuthenticated) {
       navigate('/auth'); // Redirect to login if not authenticated
-    } else if (!profileExists) {
+    } else if (!profile) { // Check if profile exists using the profile object
       // If authenticated but profile doesn't exist, redirect to profile setup
       // Only redirect if not already on the profile page to avoid loops
       if (window.location.pathname !== '/profile') {
         navigate('/profile');
       }
     }
-  }, [isAuthenticated, profileExists, isLoading, navigate]); // Add dependencies
+  }, [isAuthenticated, profile, isLoading, navigate]); // Add profile and isLoading to dependencies
 
   if (isLoading) return null; // Render null if still loading
 
