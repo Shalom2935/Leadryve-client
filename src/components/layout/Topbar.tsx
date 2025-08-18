@@ -54,9 +54,9 @@ export const Topbar: React.FC<TopbarProps> = ({ children, onToggleSidebar }) => 
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="default" size="icon" asChild>
+                <Button variant="default" size="icon" className='rounded-full' asChild>
                   <Link to="/missions/create">
-                    <Plus size={16} />
+                    <Plus size={20} />
                     <span className="sr-only">Nouvelle Mission</span>
                   </Link>
                 </Button>

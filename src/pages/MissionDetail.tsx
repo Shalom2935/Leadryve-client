@@ -77,8 +77,7 @@ const MissionDetail = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   useEffect(() => {
-    const fetchMission = async () => {
-      setLoading(true);
+    const fetchMissionData = async () => {
       setError('');
       try {
         const token = localStorage.getItem('token');
@@ -94,15 +93,10 @@ const MissionDetail = () => {
         setMission(parsed.data);
       } catch (e: any) {
         setError(e.message || 'Erreur inconnue');
-      } finally {
-        setLoading(false);
       }
     };
-    fetchMission();
-  }, [id]);
 
-  useEffect(() => {
-    const fetchLeads = async () => {
+    const fetchLeadsData = async () => {
       if (!id) return;
       try {
         const token = localStorage.getItem('token');
@@ -121,8 +115,35 @@ const MissionDetail = () => {
         // Optionally handle error
       }
     };
-    fetchLeads();
-  }, [id]);
+
+    // Initial load for both mission and leads
+    const initialFetch = async () => {
+      setLoading(true);
+      await Promise.all([fetchMissionData(), fetchLeadsData()]);
+      setLoading(false);
+    };
+
+    initialFetch();
+
+    // Set up polling for mission and leads if mission is not completed
+    let missionIntervalId: NodeJS.Timeout;
+    let leadsIntervalId: NodeJS.Timeout;
+
+    if (mission && mission.status !== 'completed') {
+      missionIntervalId = setInterval(fetchMissionData, 5000);
+      leadsIntervalId = setInterval(fetchLeadsData, 5000);
+    }
+
+    // Cleanup function to clear intervals
+    return () => {
+      if (missionIntervalId) {
+        clearInterval(missionIntervalId);
+      }
+      if (leadsIntervalId) {
+        clearInterval(leadsIntervalId);
+      }
+    };
+  }, [id, mission?.status]); // Re-run effect if id or mission status changes
 
   const getScoreClass = (score: number) => {
     if (score >= 80) return 'lead-score-high';
