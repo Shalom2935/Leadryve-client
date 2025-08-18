@@ -43,7 +43,7 @@ type ProfileFormFields = {
   services: string[];
   geo_coverage: string[];
   employees: string;
-  openingHours: OpeningHours;
+  opening_hours: OpeningHours;
   address: string;
   email: string;
   phone: string;
@@ -82,7 +82,7 @@ const ProfileUpdate = () => {
     services: [''],
     geo_coverage: [],
     employees: '',
-    openingHours: { ...DEFAULT_OPENING_HOURS },
+    opening_hours: { ...DEFAULT_OPENING_HOURS },
     address: '',
     email: '',
     phone: '',
@@ -120,7 +120,7 @@ const ProfileUpdate = () => {
         services: profile.services || [''],
         geo_coverage: profile.geo_coverage || [],
         employees: profile.employees || '',
-        openingHours: profile.openingHours || { ...DEFAULT_OPENING_HOURS },
+        opening_hours: profile.opening_hours || { ...DEFAULT_OPENING_HOURS },
         address: profile.address || '',
         email: profile.company_email || '',
         phone: profile.phone_number || '',
@@ -130,9 +130,9 @@ const ProfileUpdate = () => {
       });
 
       const updatedOpeningDays: any = {};
-      for (const day in profile.openingHours) {
+      for (const day in profile.opening_hours) {
         const d = day as keyof OpeningHours;
-        updatedOpeningDays[d] = !!(profile.openingHours[d].start && profile.openingHours[d].end);
+        updatedOpeningDays[d] = !!(profile.opening_hours[d].start && profile.opening_hours[d].end);
       }
       setOpeningDays(updatedOpeningDays);
     }
@@ -166,9 +166,9 @@ const ProfileUpdate = () => {
   const handleOpeningHoursChange = (day: keyof OpeningHours, part: 'start' | 'end', value: string) => {
     setForm(prev => ({
       ...prev,
-      openingHours: {
-        ...prev.openingHours,
-        [day]: { ...prev.openingHours[day], [part]: value }
+      opening_hours: {
+        ...prev.opening_hours,
+        [day]: { ...prev.opening_hours[day], [part]: value }
       }
     }));
   };
@@ -236,7 +236,7 @@ const ProfileUpdate = () => {
       services: form.services,
       geo_coverage: form.geo_coverage,
       employees: form.employees,
-      opening_hours: form.openingHours,
+      opening_hours: form.opening_hours,
       location: form.address,
       company_email: form.email,
       phone_number: form.phone,
@@ -389,7 +389,7 @@ const ProfileUpdate = () => {
                             <Input
                               type="time"
                               name={`openingHours-${day}-start`}
-                              value={form.openingHours[day].start}
+                              value={form.opening_hours[day].start}
                               onChange={e => handleOpeningHoursChange(day, 'start', e.target.value)}
                               className="flex-1"
                             />
@@ -397,7 +397,7 @@ const ProfileUpdate = () => {
                             <Input
                               type="time"
                               name={`openingHours-${day}-end`}
-                              value={form.openingHours[day].end}
+                              value={form.opening_hours[day].end}
                               onChange={e => handleOpeningHoursChange(day, 'end', e.target.value)}
                               className="flex-1"
                             />

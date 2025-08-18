@@ -89,9 +89,12 @@ const Auth = () => {
       const data = await res.json();
       
       if (data && data.access_token) {
-        // On passe le token et l'état du profil à la fonction de login
-        login(data.access_token, data.profile_exists);
+        console.log("Auth.tsx - Login successful, calling login from useAuth. Token:", data.access_token);
+        login(data.access_token);
+        // Explicitly navigate to the dashboard after successful login
+        navigate('/');
       } else {
+        console.error("Auth.tsx - API response invalid:", data);
         throw new Error('Réponse de l\'API invalide');
       }
 
@@ -198,4 +201,3 @@ const Auth = () => {
 };
 
 export default Auth;
-
