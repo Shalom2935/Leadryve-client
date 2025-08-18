@@ -17,6 +17,7 @@ import { RequireAuth } from "@/hooks/useAuth";
 import ProfileUpdate from "./pages/ProfileUpdate";
 import { useEffect } from "react";
 import { useAuthStore } from "./store/authStore"; // Import the Zustand store
+import usePageTitle from "./hooks/usePageTitle";
 
 const queryClient = new QueryClient();
 
@@ -30,19 +31,74 @@ const AppRoutes = () => {
 
   return (
     <Routes>
-      <Route path="/auth" element={<Auth />} />
-      <Route path="/profile" element={<RequireAuth><ProfileSetup /></RequireAuth>} />
-      <Route path="/profile-update" element={<RequireAuth><ProfileUpdate /></RequireAuth>} />
-      <Route path="/auth/confirm-email" element={<ConfirmEmail />} />
-      <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
-      <Route path="/missions" element={<RequireAuth><Missions /></RequireAuth>} />
-      <Route path="/missions/create" element={<RequireAuth><CreateMission /></RequireAuth>} />
-      <Route path="/missions/:id" element={<RequireAuth><MissionDetail /></RequireAuth>} />
-      {/* <Route path="/leads" element={<RequireAuth><Leads /></RequireAuth>} /> */}
-      <Route path="/settings" element={<RequireAuth><Settings /></RequireAuth>} />
-      <Route path="*" element={<RequireAuth><NotFound /></RequireAuth>} />
+      <Route path="/auth" element={<AuthWithTitle title="Authentication" />} />
+      <Route path="/profile" element={<RequireAuth><ProfileSetupWithTitle title="Profile Setup" /></RequireAuth>} />
+      <Route path="/profile-update" element={<RequireAuth><ProfileUpdateWithTitle title="Update Profile" /></RequireAuth>} />
+      <Route path="/auth/confirm-email" element={<ConfirmEmailWithTitle title="Confirm Email" />} />
+      <Route path="/" element={<RequireAuth><IndexWithTitle title="Dashboard" /></RequireAuth>} />
+      <Route path="/missions" element={<RequireAuth><MissionsWithTitle title="Missions" /></RequireAuth>} />
+      <Route path="/missions/create" element={<RequireAuth><CreateMissionWithTitle title="Create Mission" /></RequireAuth>} />
+      <Route path="/missions/:id" element={<RequireAuth><MissionDetailWithTitle title="Mission Details" /></RequireAuth>} />
+      {/* <Route path="/leads" element={<RequireAuth><LeadsWithTitle title="Leads" /></RequireAuth>} /> */}
+      <Route path="/settings" element={<RequireAuth><SettingsWithTitle title="Settings" /></RequireAuth>} />
+      <Route path="*" element={<RequireAuth><NotFoundWithTitle title="Page Not Found" /></RequireAuth>} />
     </Routes>
   );
+};
+
+const AuthWithTitle = ({ title }: { title: string }) => {
+  usePageTitle(title);
+  return <Auth />;
+};
+
+const ProfileSetupWithTitle = ({ title }: { title: string }) => {
+  usePageTitle(title);
+  return <ProfileSetup />;
+};
+
+const ProfileUpdateWithTitle = ({ title }: { title: string }) => {
+  usePageTitle(title);
+  return <ProfileUpdate />;
+};
+
+const ConfirmEmailWithTitle = ({ title }: { title: string }) => {
+  usePageTitle(title);
+  return <ConfirmEmail />;
+};
+
+const IndexWithTitle = ({ title }: { title: string }) => {
+  usePageTitle(title);
+  return <Index />;
+};
+
+const MissionsWithTitle = ({ title }: { title: string }) => {
+  usePageTitle(title);
+  return <Missions />;
+};
+
+const CreateMissionWithTitle = ({ title }: { title: string }) => {
+  usePageTitle(title);
+  return <CreateMission />;
+};
+
+const MissionDetailWithTitle = ({ title }: { title: string }) => {
+  usePageTitle(title);
+  return <MissionDetail />;
+};
+
+const LeadsWithTitle = ({ title }: { title: string }) => {
+  usePageTitle(title);
+  return <Leads />;
+};
+
+const SettingsWithTitle = ({ title }: { title: string }) => {
+  usePageTitle(title);
+  return <Settings />;
+};
+
+const NotFoundWithTitle = ({ title }: { title: string }) => {
+  usePageTitle(title);
+  return <NotFound />;
 };
 
 const App = () => (
