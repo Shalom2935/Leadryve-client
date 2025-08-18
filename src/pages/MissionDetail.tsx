@@ -48,6 +48,7 @@ import { toast } from 'sonner';
 import { missionSchema } from '@/lib/schemas';
 import { missionLeadsListSchema } from '@/lib/schemas';
 import { SelectScrollUpButton } from '@/components/ui/select';
+import ReportDialog from '@/components/ReportDialog'; // Import the new component
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -61,7 +62,7 @@ const MissionDetail = () => {
   const [selectedLead, setSelectedLead] = useState<any>(null);
   const [sendNow, setSendNow] = useState(true);
   const [message, setMessage] = useState('');
-  const [reasonOpenId, setReasonOpenId] = useState<number | null>(null);
+  const [reportModalOpen, setReportModalOpen] = useState(false); // New state for report dialog
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window !== 'undefined') {
       return window.innerWidth < 640;
@@ -170,6 +171,11 @@ const MissionDetail = () => {
     setContactModalOpen(true);
   };
 
+  const openReportModal = (lead: any) => { // New function to open report dialog
+    setSelectedLead(lead);
+    setReportModalOpen(true);
+  };
+
   const handleSendMessage = () => {
     toast.success(`Message ${sendNow ? 'sent' : 'scheduled'} to ${selectedLead.company_name}!`);
     setContactModalOpen(false);
@@ -258,82 +264,6 @@ const MissionDetail = () => {
             <h2 className="text-xl font-semibold">Leads</h2>
             <div className="flex gap-2">
               <div className="relative w-64">
-        {reasonOpenId !== null && (
-          <div
-            onClick={() => setReasonOpenId(null)}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              background: 'rgba(0, 0, 0, 0.4)',
-              zIndex: 9999,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <div
-              style={{
-                background: '#fff',
-                borderRadius: '20px 20px 20px',
-                padding: '32px 28px',
-                maxWidth: 520,
-                width: '95%',
-                maxHeight: '80vh',
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-              }}
-              onClick={e => e.stopPropagation()}
-            >
-              <h3 style={{
-                fontSize: '1.25rem',
-                fontWeight: 700,
-                marginBottom: 18,
-                letterSpacing: '0.01em',
-                textAlign: 'center',
-              }}>Rapport sur {leads.find(l => l.id === reasonOpenId)?.company_name}</h3>
-              <div style={{
-                width: '100%',
-                marginBottom: 12,
-              }}>
-                {(() => {
-                  const selectedLead = leads.find(l => l.id === reasonOpenId);
-                  return selectedLead?.reason?.split('\n').map((paragraph: string, idx: number) => (
-                    <p key={idx} style={{
-                      marginBottom: 10,
-                      color: '#333',
-                      fontSize: '1rem',
-                      lineHeight: 1.6,
-                      background: '',
-                      borderRadius: 8,
-                      padding: '10px 14px',
-                      wordBreak: 'break-word',
-                    }} className="whitespace-pre-line">{paragraph}</p>
-                  ));
-                })()}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                style={{
-                  marginTop: 8,
-                  borderRadius: 8,
-                  fontWeight: 500,
-                  padding: '6px 18px',
-                }}
-                onClick={() => setReasonOpenId(null)}
-              >
-                Fermer
-              </Button>
-            </div>
-          </div>
-        )}
-        
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
                 <Input
                   type="search"
@@ -378,7 +308,7 @@ const MissionDetail = () => {
                     <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setReasonOpenId(lead.id)}
+                    onClick={() => openReportModal(lead)} // Use new function
                     className=" bg-none text-purple-600 px-3 py-1 font-semibold hover:text-purple-400 transition"
                   >
                     Afficher le rapport
@@ -444,7 +374,7 @@ const MissionDetail = () => {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => setReasonOpenId(lead.id)}
+                                    onClick={() => openReportModal(lead)} // Use new function
                                     className=" bg-none text-purple-600 px-3 py-1 font-semibold hover:text-purple-400 transition"
                                   >
                                     Afficher le rapport
@@ -491,8 +421,18 @@ const MissionDetail = () => {
 
 
   </AppLayout>
+  {selectedLead && (
+        <ReportDialog
+          isOpen={reportModalOpen}
+          onClose={() => setReportModalOpen(false)}
+          companyName={selectedLead.company_name}
+          reportContent={selectedLead.reason || ''}
+        />
+      )}
   </>
   );
 };
 
 export default MissionDetail;
+
+//

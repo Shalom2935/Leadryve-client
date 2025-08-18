@@ -1,11 +1,16 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+
+
 
 const ConfirmEmail = () => {
   // Récupère l'email depuis l'URL (query param)
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const email = params.get('email');
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-leadryve-purple/10 to-blue-100">
@@ -15,6 +20,9 @@ const ConfirmEmail = () => {
         <p className="text-slate-700 mb-2">Un email de confirmation a été envoyé à&nbsp;:</p>
         <p className="font-semibold text-leadryve-purple mb-4">{email}</p>
         <p className="text-slate-500 text-sm mb-4">Cliquez sur le lien reçu pour activer votre compte.<br/>Pensez à vérifier vos spams.</p>
+          <Button onClick={() => navigate('/auth')} className="w-full">
+            Retour à la connexion
+          </Button>
         <div className="mt-6">
           <span className="inline-block bg-leadryve-purple/10 text-leadryve-purple px-4 py-2 rounded-full text-xs font-medium">Leadryve</span>
         </div>

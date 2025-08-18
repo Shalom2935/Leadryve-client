@@ -17,9 +17,10 @@ const SignupForm = {
 };
 
 const Auth = () => {
-  const [mode, setMode] = useState<'register' | 'login'>('register');
+  const [mode, setMode] = useState<'register' | 'login' | 'reset-password'>('register');
   const [signupForm, setSignupForm] = useState({ ...SignupForm });
   const [form, setForm] = useState({ email: '', password: '' });
+  const [resetPasswordForm, setResetPasswordForm] = useState({ email: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -34,6 +35,9 @@ const Auth = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
+  const handleResetPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setResetPasswordForm({ ...resetPasswordForm, [e.target.name]: e.target.value });
+  };
   const validateSignup = (form: typeof SignupForm) => {
     const errors: Record<string, string> = {};
     if (!form.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) errors.email = 'Email valide requis';
@@ -45,6 +49,11 @@ const Auth = () => {
     const errors: Record<string, string> = {};
     if (!form.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) errors.email = 'Email valide requis';
     if (!form.password) errors.password = 'Mot de passe requis';
+    return errors;
+  };
+  const validateResetPassword = (form: { email: string }) => {
+    const errors: Record<string, string> = {};
+    if (!form.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) errors.email = 'Email valide requis';
     return errors;
   };
   const handleSignup = async (e: React.FormEvent) => {
@@ -104,13 +113,43 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  const handleResetPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setApiError(null);
+    const errs = validateResetPassword(resetPasswordForm);
+    setErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/auth/request-password-reset/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(resetPasswordForm),
+      });
+      if (!res.ok) throw new Error('Erreur lors de la demande de réinitialisation du mot de passe. Veuillez vérifier votre email.');
+      setLoading(false);
+      setApiError('Un email de réinitialisation de mot de passe a été envoyé à votre adresse.');
+      setMode('login'); // Optionally redirect to login after sending email
+    } catch (err: any) {
+      setApiError(err.message || 'Erreur inconnue lors de la réinitialisation du mot de passe.');
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-leadryve-purple/10 to-slate-100 p-4 sm:p-6 md:p-8">
       <div className="flex-grow flex flex-col justify-center items-center w-full">
         <img src="/Logo.svg" alt="Leadryve Logo" className="md:h-25 h-14  mb-8" />
         <Card className="w-full max-w-md shadow-xl animate-fade-in">
           <CardHeader>
-            <CardTitle className="text-center text-2xl">{mode === 'register' ? 'Créer votre compte' : 'Connexion'}</CardTitle>
+            <CardTitle className="text-center text-2xl">
+              {mode === 'register'
+                ? 'Créer votre compte'
+                : mode === 'login'
+                ? 'Connexion'
+                : 'Réinitialiser le mot de passe'}
+            </CardTitle>
           </CardHeader>
           {mode === 'register' ? (
             <form onSubmit={handleSignup}>
@@ -147,7 +186,7 @@ const Auth = () => {
                 </Button>
               </CardFooter>
             </form>
-          ) : (
+          ) : mode === 'login' ? (
             <form onSubmit={handleSubmit}>
               <CardContent className="space-y-4">
                 <div>
@@ -162,11 +201,29 @@ const Auth = () => {
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
+                  <button type="button" onClick={() => setMode('reset-password')} className="mt-2 text-sm text-leadryve-purple hover:underline focus:outline-none">
+                    Mot de passe oublié ?
+                  </button>
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end">
                 <Button type="submit" disabled={loading}>
                   {loading ? 'Chargement...' : 'Se connecter'}
+                </Button>
+              </CardFooter>
+            </form>
+          ) : (
+            <form onSubmit={handleResetPasswordSubmit}>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label>Email</Label>
+                  <Input name="email" type="email" value={resetPasswordForm.email} onChange={handleResetPasswordChange} required />
+                  {errors.email && <div className="text-red-500 text-xs mt-1">{errors.email}</div>}
+                </div>
+              </CardContent>
+              <CardFooter className="flex justify-end">
+                <Button type="submit" disabled={loading}>
+                  {loading ? 'Chargement...' : 'Réinitialiser le mot de passe'}
                 </Button>
               </CardFooter>
             </form>
@@ -181,11 +238,18 @@ const Auth = () => {
                 Se connecter
               </button>
             </p>
-          ) : (
+          ) : mode === 'login' ? (
             <p>
               Vous n'avez pas de compte ?{' '}
               <button onClick={() => setMode('register')} className="font-semibold text-leadryve-purple hover:underline focus:outline-none">
                 S'inscrire
+              </button>
+            </p>
+          ) : (
+            <p>
+              Retour à la connexion ?{' '}
+              <button onClick={() => setMode('login')} className="font-semibold text-leadryve-purple hover:underline focus:outline-none">
+                Se connecter
               </button>
             </p>
           )}
@@ -194,7 +258,9 @@ const Auth = () => {
       <div className="w-full text-center text-muted-foreground text-xs max-w-md py-4">
         {mode === 'register'
           ? 'Un email de confirmation vous sera envoyé après inscription.'
-          : 'Connectez-vous pour accéder à votre espace.'}
+          : mode === 'login'
+          ? 'Connectez-vous pour accéder à votre espace.'
+          : 'Entrez votre email pour recevoir un lien de réinitialisation.'}
       </div>
     </div>
   );
