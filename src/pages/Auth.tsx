@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Eye, EyeOff } from 'lucide-react';
 
@@ -17,7 +17,11 @@ const SignupForm = {
 };
 
 const Auth = () => {
-  const [mode, setMode] = useState<'register' | 'login' | 'reset-password'>('register');
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const initialMode = queryParams.get('mode') === 'login' ? 'login' : 'register';
+
+  const [mode, setMode] = useState<'register' | 'login' | 'reset-password'>(initialMode);
   const [signupForm, setSignupForm] = useState({ ...SignupForm });
   const [form, setForm] = useState({ email: '', password: '' });
   const [resetPasswordForm, setResetPasswordForm] = useState({ email: '' });

@@ -24,7 +24,7 @@ const CheckEmail = () => {
     try {
       // Placeholder for API call to resend email
       // Replace with your actual API endpoint and method
-      const res = await fetch(`${API_BASE}/auth/resend-password-reset/`, {
+      const res = await fetch(`${API_BASE}/auth/password-forgot/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -65,7 +65,7 @@ const CheckEmail = () => {
               Veuillez vérifier votre dossier de spams si vous ne le trouvez pas dans votre boîte de réception.
             </p>
             <div className="flex flex-col gap-2">
-              <Button onClick={() => navigate('/auth')} className="w-full">
+              <Button onClick={() => navigate('/auth?mode=login')} className="w-full">
                 Retour à la connexion
               </Button>
               <Button 

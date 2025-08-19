@@ -15,6 +15,7 @@ import Auth from "./pages/Auth";
 import ConfirmEmail from "./pages/ConfirmEmail";
 import ResetPassword from "./pages/ResetPassword";
 import CheckEmail from "./pages/CheckEmail";
+import PasswordResetSuccess from "./pages/PasswordResetSuccess";
 import { RequireAuth } from "@/hooks/useAuth";
 import ProfileUpdate from "./pages/ProfileUpdate";
 import { useEffect } from "react";
@@ -36,6 +37,7 @@ const AppRoutes = () => {
       <Route path="/auth" element={<AuthWithTitle title="Authentication" />} />
       <Route path="/auth/reset-password" element={<ResetPasswordWithTitle title="Reset Password" />} />
       <Route path="/auth/check-email" element={<CheckEmailWithTitle title="Check Email" />} />
+      <Route path="/auth/password-reset-success" element={<PasswordResetSuccessWithTitle title="Password Reset Success" />} />
       <Route path="/profile" element={<RequireAuth><ProfileSetupWithTitle title="Profile Setup" /></RequireAuth>} />
       <Route path="/profile-update" element={<RequireAuth><ProfileUpdateWithTitle title="Update Profile" /></RequireAuth>} />
       <Route path="/auth/confirm-email" element={<ConfirmEmailWithTitle title="Confirm Email" />} />
@@ -78,6 +80,11 @@ const ResetPasswordWithTitle = ({ title }: { title: string }) => {
 const CheckEmailWithTitle = ({ title }: { title: string }) => {
   usePageTitle(title);
   return <CheckEmail />;
+};
+
+const PasswordResetSuccessWithTitle = ({ title }: { title: string }) => {
+  usePageTitle(title);
+  return <PasswordResetSuccess />;
 };
 
 const IndexWithTitle = ({ title }: { title: string }) => {
