@@ -122,15 +122,14 @@ const Auth = () => {
     if (Object.keys(errs).length > 0) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/auth/request-password-reset/`, {
+      const res = await fetch(`${API_BASE}/auth/password-forgot/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(resetPasswordForm),
       });
-      if (!res.ok) throw new Error('Erreur lors de la demande de réinitialisation du mot de passe. Veuillez vérifier votre email.');
+      if (!res.ok) throw new Error(res.statusText || 'Erreur lors de la demande de réinitialisation du mot de passe. Veuillez vérifier votre email.');
       setLoading(false);
-      setApiError('Un email de réinitialisation de mot de passe a été envoyé à votre adresse.');
-      setMode('login'); // Optionally redirect to login after sending email
+      navigate(`/auth/check-email?email=${resetPasswordForm.email}`);
     } catch (err: any) {
       setApiError(err.message || 'Erreur inconnue lors de la réinitialisation du mot de passe.');
       setLoading(false);

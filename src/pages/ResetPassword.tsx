@@ -18,15 +18,15 @@ const ResetPassword = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [token, setToken] = useState<string | null>(null);
-  const [uid, setUid] = useState<string | null>(null);
+  // const [uid, setUid] = useState<string | null>(null);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const tokenParam = queryParams.get('token');
-    const uidParam = queryParams.get('uid');
-    if (tokenParam && uidParam) {
+    // const uidParam = queryParams.get('uid');
+    if (tokenParam) {
       setToken(tokenParam);
-      setUid(uidParam);
+      // setUid(uidParam);
     } else {
       setApiError('Lien de réinitialisation de mot de passe invalide ou expiré.');
     }
@@ -50,8 +50,8 @@ const ResetPassword = () => {
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
-    if (!token || !uid) {
-      setApiError('Token ou UID manquant.');
+    if (!token) {
+      setApiError('Token manquant.');
       return;
     }
 
@@ -61,10 +61,9 @@ const ResetPassword = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          uid: uid,
+          // uid: uid,
           token: token,
           new_password: form.password,
-          re_new_password: form.confirmPassword,
         }),
       });
 

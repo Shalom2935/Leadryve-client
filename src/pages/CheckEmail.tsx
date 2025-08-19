@@ -1,14 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { MailCheck } from 'lucide-react';
+import { MailCheck, Loader2 } from 'lucide-react'; // Import Loader2 for loading spinner
+import { toast } from 'sonner'; // Import toast for notifications
+
+const API_BASE = import.meta.env.VITE_API_BASE; // Assuming API_BASE is available
 
 const CheckEmail = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const email = queryParams.get('email');
+  const [isResending, setIsResending] = useState(false);
+
+  const handleResendEmail = async () => {
+    if (!email) {
+      toast.error("Impossible de renvoyer l'email: adresse email manquante.");
+      return;
+    }
+
+    setIsResending(true);
+    try {
+      // Placeholder for API call to resend email
+      // Replace with your actual API endpoint and method
+      const res = await fetch(`${API_BASE}/auth/resend-password-reset/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Échec de l'envoi de l'email.");
+      }
+
+      toast.success("Email de réinitialisation envoyé avec succès !");
+    } catch (error: any) {
+      toast.error(error.message || "Une erreur est survenue lors de l'envoi de l'email.");
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-leadryve-purple/10 to-slate-100 p-4 sm:p-6 md:p-8">
@@ -29,9 +64,26 @@ const CheckEmail = () => {
             <p className="text-muted-foreground">
               Veuillez vérifier votre dossier de spams si vous ne le trouvez pas dans votre boîte de réception.
             </p>
-            <Button onClick={() => navigate('/auth')} className="w-full">
-              Retour à la connexion
-            </Button>
+            <div className="flex flex-col gap-2">
+              <Button onClick={() => navigate('/auth')} className="w-full">
+                Retour à la connexion
+              </Button>
+              <Button 
+                onClick={handleResendEmail} 
+                className="w-full" 
+                variant="outline"
+                disabled={isResending}
+              >
+                {isResending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Renvoyer l'email...
+                  </>
+                ) : (
+                  "Renvoyer l'email"
+                )}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
