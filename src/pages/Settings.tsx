@@ -33,6 +33,8 @@ import { toast } from 'sonner';
 import { useProfile } from '@/hooks/useProfile';
 import { Link } from 'react-router-dom';
 
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+
 const Settings = () => {
   const { profile } = useProfile();
 
@@ -45,6 +47,10 @@ const Settings = () => {
     responses: true,
   });
 
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+
   const handleToggleChange = (key: string) => {
     setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
   };
@@ -53,6 +59,56 @@ const Settings = () => {
     if (!name) return '';
     const names = name.split(' ');
     return names.map((n) => n[0]).join('');
+  };
+
+  const handeUpdatePassword = async (old_password: string, new_password: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error("No authentication token found. Please log in again.");
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/auth/password-update/`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          old_password,
+          new_password,
+        })
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        const errorMessage = errorData.message || 'Failed to update password.';
+        toast.error(`Error: ${errorMessage}`);
+        throw new Error(errorMessage);
+      }
+
+      toast.success("Password updated successfully!");
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmNewPassword('');
+
+    } catch (error: any) {
+      console.error("An unexpected error occurred:", error.message);
+      toast.error("An unexpected error occurred. Please try again.");
+    }
+  };
+
+  const handlePasswordUpdateSubmit = async () => {
+    if (newPassword.length < 8) {
+      toast.error("New password must be at least 8 characters long.");
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      toast.error("New password and confirmation do not match.");
+      return;
+    }
+    await handeUpdatePassword(currentPassword, newPassword);
   };
 
   return (
@@ -157,6 +213,8 @@ const Settings = () => {
                     id="current-password"
                     type="password"
                     placeholder="••••••••"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
                   />
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -166,6 +224,8 @@ const Settings = () => {
                       id="new-password"
                       type="password"
                       placeholder="••••••••"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -174,12 +234,14 @@ const Settings = () => {
                       id="confirm-password"
                       type="password"
                       placeholder="••••••••"
+                      value={confirmNewPassword}
+                      onChange={(e) => setConfirmNewPassword(e.target.value)}
                     />
                   </div>
                 </div>
               </CardContent>
               <CardFooter>
-                <Button variant="outline">Mettre à jour le mot de passe</Button>
+                <Button variant="outline" onClick={handlePasswordUpdateSubmit}>Mettre à jour le mot de passe</Button>
               </CardFooter>
             </Card>
           </TabsContent>
@@ -311,7 +373,7 @@ const Settings = () => {
               </CardContent>
               <CardFooter className="flex justify-between">
                 <Button variant="outline">Voir l'historique de facturation</Button>
-                <Button variant="default">Mettre à jour le moyen de paiement</Button>
+                <Button variant="default">Mettre à niveau le moyen de paiement</Button>
               </CardFooter>
             </Card>
           </TabsContent> */}

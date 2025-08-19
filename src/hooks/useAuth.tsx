@@ -20,8 +20,8 @@ export function RequireAuth({ children }: { children: JSX.Element }) {
     if (!overallLoading) {
       console.log("RequireAuth Effect - Loading complete. Checking redirection conditions.");
       if (!isAuthenticated) {
-        console.log("RequireAuth Effect - Not authenticated, navigating to /auth");
-        navigate('/auth');
+        console.log("RequireAuth Effect - Not authenticated, navigating to /auth?mode=login");
+        navigate('/auth?mode=login');
       } else if (!profile) {
         console.log("RequireAuth Effect - Authenticated but profile is null, checking current path.");
         if (window.location.pathname !== '/profile') {
