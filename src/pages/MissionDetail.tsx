@@ -251,7 +251,7 @@ const MissionDetail = () => {
                   <div>
                     <p className="font-medium">Progression</p>
                     <Progress value={mission.progress} className="h-2" />
-                    <p className="text-sm">{mission.progress}% Terminée</p>
+                    <p className="text-sm">{Math.floor(mission.progress)}% Terminée</p>
                   </div>
                 </div>
               </div>
