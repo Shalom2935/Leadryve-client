@@ -67,7 +67,7 @@ export const missionLeadSchema = z.object({
   company_name: z.string(),
   address: z.string().optional(),
   score: z.number(),
-  email: z.string().email().optional(),
+  email: z.string().min(1).optional(),
   phone: z.array(z.string().optional()),
   reason: z.string().optional(),
   created_at: z.string(), // ISO date

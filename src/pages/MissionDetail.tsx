@@ -108,10 +108,14 @@ const MissionDetail = () => {
         });
         if (!res.ok) throw new Error('Erreur lors du chargement des leads');
         const data = await res.json();
+        console.log('Raw leads data received:', data); // Log raw data
         const parsed = missionLeadsListSchema.safeParse(data.items);
-        if (!parsed.success) throw new Error('Format de données inattendu');
-        setLeads(data.items);
-        console.log(leads)
+        if (!parsed.success) {
+          console.error('Leads schema parsing error:', parsed.error); // Log parsing error
+          throw new Error('Format de données inattendu');
+        }
+        setLeads(parsed.data); // Use parsed data
+        console.log('Parsed leads data set to state:', parsed.data); // Log parsed data
       } catch (e: any) {
         // Optionally handle error
       }
