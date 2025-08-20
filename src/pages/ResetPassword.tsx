@@ -74,7 +74,7 @@ const ResetPassword = () => {
 
       setLoading(false);
       setApiError('Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.');
-      navigate('/auth'); // Redirect to login page after successful reset
+      navigate('/auth/password-reset-success'); // Redirect to login page after successful reset
     } catch (err: any) {
       setApiError(err.message || 'Erreur inconnue lors de la réinitialisation du mot de passe.');
       setLoading(false);
