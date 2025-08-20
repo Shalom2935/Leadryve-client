@@ -139,7 +139,7 @@ const Dashboard = () => {
                   <div className="mb-4">
                     <div className="flex justify-between text-sm mb-1">
                       <span>Progression</span>
-                      <span className="text-leadryve-purple font-medium">{mission.progress}%</span>
+                      <span className="text-leadryve-purple font-medium">{Math.floor(mission.progress)}%</span>
                     </div>
                     <Progress value={mission.progress} className="h-2" />
                   </div>
