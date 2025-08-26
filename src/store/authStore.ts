@@ -29,6 +29,7 @@ interface Profile {
     x?: string;
   };
   pitch?: string;
+  has_email_integration?: boolean; // New field
 }
 
 interface AuthState {

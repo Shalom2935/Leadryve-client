@@ -21,7 +21,8 @@ import {
   Mail, 
   Phone, 
   Linkedin, 
-  MoreHorizontal 
+  MoreHorizontal,
+  Loader2 // Import Loader2
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
@@ -49,6 +50,7 @@ import { missionSchema } from '@/lib/schemas';
 import { missionLeadsListSchema } from '@/lib/schemas';
 import { SelectScrollUpButton } from '@/components/ui/select';
 import ReportDialog from '@/components/ReportDialog'; // Import the new component
+import { useProfile } from '@/hooks/useProfile'; // Import useProfile hook
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -60,9 +62,12 @@ const MissionDetail = () => {
   const [error, setError] = useState('');
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
-  const [sendNow, setSendNow] = useState(true);
   const [message, setMessage] = useState('');
+  const [recipientEmail, setRecipientEmail] = useState(''); // New state for recipient email
+  const [emailSubject, setEmailSubject] = useState(''); // New state for email subject
   const [reportModalOpen, setReportModalOpen] = useState(false); // New state for report dialog
+  const { profile } = useProfile(); // Get user profile for sender email
+  const [isSending, setIsSending] = useState(false); // New state for button loading
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window !== 'undefined') {
       return window.innerWidth < 640;
@@ -171,7 +176,9 @@ const MissionDetail = () => {
 
   const openContactModal = (lead: any) => {
     setSelectedLead(lead);
-    setMessage(`Hi, I came across ${lead.company_name} and I'd like to discuss how our solution might be valuable for your business.`);
+    setRecipientEmail(lead.email || '');
+    setEmailSubject(`Proposition de valeur pour ${lead.company_name}`); // Default subject
+    setMessage(`Bonjour ${lead.company_name},\n\nJe suis tombé sur votre entreprise et j'aimerais discuter de la manière dont notre solution pourrait être précieuse pour votre activité.\n\nCordialement,\n[Votre Nom]`);
     setContactModalOpen(true);
   };
 
@@ -180,12 +187,58 @@ const MissionDetail = () => {
     setReportModalOpen(true);
   };
 
-  const handleSendMessage = () => {
-    toast.success(`Message ${sendNow ? 'sent' : 'scheduled'} to ${selectedLead.company_name}!`);
-    setContactModalOpen(false);
-    toast(`Lead status updated to "Contacted"`, {
-      description: selectedLead.company_name,
-    });
+  const handleSendMessage = async (leadId) => {
+    if (!selectedLead || !recipientEmail || !emailSubject || !message) {
+      toast.error("Veuillez remplir tous les champs du message.");
+      return;
+    }
+
+    setIsSending(true); // Set loading state
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error("No authentication token found. Please log in again.");
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/gmail/send/`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          lead_id: leadId,
+          to: recipientEmail,
+          subject: emailSubject,
+          body: message,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        const errorMessage = errorData.detail || 'Échec de l\'envoi du message.';
+        toast.error(`Erreur: ${errorMessage}`);
+        throw new Error(errorMessage);
+      }
+
+      toast.success(`Message envoyé à ${selectedLead.company_name}!`);
+      setContactModalOpen(false);
+      setMessage('');
+      setRecipientEmail('');
+      setEmailSubject('');
+      // Optionally update lead status here if your backend provides a way to do so
+      // toast(`Statut du lead mis à jour sur "Contacté"`, {
+      //   description: selectedLead.company_name,
+      // });
+
+    } catch (error: any) {
+      console.error("Une erreur inattendue est survenue lors de l'envoi:", error.message);
+      //toast.error("Une erreur inattendue est survenue. Veuillez réessayer.");
+    } finally {
+      setIsSending(false); // Reset loading state
+    }
   };
 
   if (loading) {
@@ -414,26 +467,87 @@ const MissionDetail = () => {
                         ))}
                       </TableBody>
                     </Table>
-        </div>
-      )}  
+                  </div>
+                )}  
             </CardContent>
           </Card>
         </div>
-
-        
       </div>
+    </AppLayout>
 
+    {selectedLead && (
+      <Dialog open={contactModalOpen} onOpenChange={setContactModalOpen}>
+        <DialogContent className="sm:max-w-lg h-[90%] overflow-y-auto"> {/* Adjusted width and added overflow */}
+          <DialogHeader>
+            <DialogTitle>Contacter {selectedLead.company_name}</DialogTitle>
+            <DialogDescription>
+              Envoyez un e-mail à {selectedLead.company_name}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="sender-email">De</Label>
+              <Input
+                id="sender-email"
+                type="email"
+                value={profile?.company_email || ''}
+                readOnly // Sender email is read-only
+                className="bg-gray-100 dark:bg-gray-800"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="recipient-email">Destinataire</Label>
+              <Input
+                id="recipient-email"
+                type="email"
+                value={recipientEmail}
+                onChange={(e) => setRecipientEmail(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="subject">Sujet</Label>
+              <Input
+                id="subject"
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="message">Message</Label>
+              <Textarea
+                id="message"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                rows={8}
+                placeholder="Écrivez votre message ici..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="submit" onClick={() => handleSendMessage(selectedLead.id)} disabled={isSending}>
+              {isSending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Envoi...
+                </>
+              ) : (
+                "Envoyer le message"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    )}
 
-  </AppLayout>
-  {selectedLead && (
-        <ReportDialog
-          isOpen={reportModalOpen}
-          onClose={() => setReportModalOpen(false)}
-          companyName={selectedLead.company_name}
-          reportContent={selectedLead.reason || ''}
-        />
-      )}
-  </>
+    {selectedLead && (
+      <ReportDialog
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        companyName={selectedLead.company_name}
+        reportContent={selectedLead.reason || ''}
+      />
+    )}
+    </>
   );
 };
 

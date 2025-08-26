@@ -16,6 +16,7 @@ import ConfirmEmail from "./pages/ConfirmEmail";
 import ResetPassword from "./pages/ResetPassword";
 import CheckEmail from "./pages/CheckEmail";
 import PasswordResetSuccess from "./pages/PasswordResetSuccess";
+import GmailCallback from "./pages/GmailCallback";
 import { RequireAuth } from "@/hooks/useAuth";
 import ProfileUpdate from "./pages/ProfileUpdate";
 import { useEffect } from "react";
@@ -41,6 +42,7 @@ const AppRoutes = () => {
       <Route path="/profile" element={<RequireAuth><ProfileSetupWithTitle title="Profile Setup" /></RequireAuth>} />
       <Route path="/profile-update" element={<RequireAuth><ProfileUpdateWithTitle title="Update Profile" /></RequireAuth>} />
       <Route path="/auth/confirm-email" element={<ConfirmEmailWithTitle title="Confirm Email" />} />
+      <Route path="/gmail/callback" element={<GmailCallbackWithTitle title="Gmail Callback" />} />
       <Route path="/" element={<RequireAuth><IndexWithTitle title="Dashboard" /></RequireAuth>} />
       <Route path="/missions" element={<RequireAuth><MissionsWithTitle title="Missions" /></RequireAuth>} />
       <Route path="/missions/create" element={<RequireAuth><CreateMissionWithTitle title="Create Mission" /></RequireAuth>} />
@@ -120,6 +122,11 @@ const SettingsWithTitle = ({ title }: { title: string }) => {
 const NotFoundWithTitle = ({ title }: { title: string }) => {
   usePageTitle(title);
   return <NotFound />;
+};
+
+const GmailCallbackWithTitle = ({ title }: { title: string }) => {
+  usePageTitle(title);
+  return <GmailCallback />;
 };
 
 const App = () => (

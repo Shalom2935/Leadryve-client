@@ -32,11 +32,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { useProfile } from '@/hooks/useProfile';
 import { Link } from 'react-router-dom';
+import { Loader2 } from 'lucide-react'; // Import Loader2
+import { useAuthStore } from '@/store/authStore'; // Import useAuthStore
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 const Settings = () => {
-  const { profile } = useProfile();
+  const { profile, refetch: refetchProfile } = useProfile(); // Get refetch from useProfile
+  const [isDisconnecting, setIsDisconnecting] = useState(false); // New state for disconnect button loading
+  const { logout } = useAuthStore(); // Get logout from auth store
 
   const [notifications, setNotifications] = useState({
     email: true,
@@ -109,6 +113,41 @@ const Settings = () => {
       return;
     }
     await handeUpdatePassword(currentPassword, newPassword);
+  };
+
+  const handleDisconnectGmail = async () => {
+    setIsDisconnecting(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error("No authentication token found. Please log in again.");
+        logout(); // Log out if token is missing
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/gmail/`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        const errorMessage = errorData.message || 'Échec de la déconnexion de Gmail.';
+        toast.error(`Erreur: ${errorMessage}`);
+        throw new Error(errorMessage);
+      }
+
+      toast.success("Compte Gmail déconnecté avec succès !");
+      refetchProfile(); // Refresh profile to update has_email_integration status
+
+    } catch (error: any) {
+      console.error("Une erreur inattendue est survenue lors de la déconnexion:", error.message);
+      toast.error("Une erreur inattendue est survenue. Veuillez réessayer.");
+    } finally {
+      setIsDisconnecting(false);
+    }
   };
 
   return (
@@ -243,6 +282,48 @@ const Settings = () => {
               <CardFooter>
                 <Button variant="outline" onClick={handlePasswordUpdateSubmit}>Mettre à jour le mot de passe</Button>
               </CardFooter>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Intégrations</CardTitle>
+                <CardDescription>
+                  Connectez des services tiers à votre compte Leadryve
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <Mail className="h-6 w-6 text-leadryve-purple" />
+                    <div>
+                      <p className="font-medium">Gmail Integration</p>
+                      <p className="text-sm text-muted-foreground">
+                        Connectez votre compte Gmail pour envoyer des e-mails.
+                      </p>
+                    </div>
+                  </div>
+                  {profile?.has_email_integration ? (
+                    <Button 
+                      variant="destructive" 
+                      onClick={handleDisconnectGmail} 
+                      disabled={isDisconnecting}
+                    >
+                      {isDisconnecting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Déconnexion...
+                        </>
+                      ) : (
+                        "Déconnecter Gmail"
+                      )}
+                    </Button>
+                  ) : (
+                    <Button variant="outline" onClick={() => window.location.href = `${API_BASE}/gmail/auth/login`}>
+                      Connecter Gmail
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
             </Card>
           </TabsContent>
           
