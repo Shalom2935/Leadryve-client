@@ -202,7 +202,15 @@ const MissionDetail = () => {
         return;
       }
 
-      const res = await fetch(`${API_BASE}/gmail/send/`, {
+      if (!profile?.email_provider) {
+        toast.error("Aucun fournisseur de messagerie connecté. Veuillez connecter votre compte Gmail ou Microsoft dans les paramètres.");
+        setIsSending(false);
+        return;
+      }
+
+      const sendEndpoint = `${API_BASE}/email/${profile.email_provider}/send/`;
+
+      const res = await fetch(sendEndpoint, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,

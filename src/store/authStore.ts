@@ -29,7 +29,7 @@ interface Profile {
     x?: string;
   };
   pitch?: string;
-  has_email_integration?: boolean; // New field
+  email_provider?: 'gmail' | 'microsoft' | null; // Updated field
 }
 
 interface AuthState {

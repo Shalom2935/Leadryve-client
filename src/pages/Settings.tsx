@@ -25,14 +25,14 @@ import {
   Download, 
   Mail, 
   Shield, 
-  UserCircle 
+  UserCircle,
+  Loader2 // Import Loader2
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { toast } from 'sonner';
 import { useProfile } from '@/hooks/useProfile';
 import { Link } from 'react-router-dom';
-import { Loader2 } from 'lucide-react'; // Import Loader2
 import { useAuthStore } from '@/store/authStore'; // Import useAuthStore
 
 const API_BASE = import.meta.env.VITE_API_BASE || '/api';
@@ -140,7 +140,42 @@ const Settings = () => {
       }
 
       toast.success("Compte Gmail déconnecté avec succès !");
-      refetchProfile(); // Refresh profile to update has_email_integration status
+      refetchProfile(); // Refresh profile to update email_provider status
+
+    } catch (error: any) {
+      console.error("Une erreur inattendue est survenue lors de la déconnexion:", error.message);
+      toast.error("Une erreur inattendue est survenue. Veuillez réessayer.");
+    } finally {
+      setIsDisconnecting(false);
+    }
+  };
+
+  const handleDisconnectMicrosoft = async () => {
+    setIsDisconnecting(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error("No authentication token found. Please log in again.");
+        logout();
+        return;
+      }
+
+      const res = await fetch(`${API_BASE}/microsoft/`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        const errorMessage = errorData.message || 'Échec de la déconnexion de Microsoft.';
+        toast.error(`Erreur: ${errorMessage}`);
+        throw new Error(errorMessage);
+      }
+
+      toast.success("Compte Microsoft déconnecté avec succès !");
+      refetchProfile(); // Refresh profile to update email_provider status
 
     } catch (error: any) {
       console.error("Une erreur inattendue est survenue lors de la déconnexion:", error.message);
@@ -302,7 +337,7 @@ const Settings = () => {
                       </p>
                     </div>
                   </div>
-                  {profile?.has_email_integration ? (
+                  {profile?.email_provider === 'gmail' ? (
                     <Button 
                       variant="destructive" 
                       onClick={handleDisconnectGmail} 
@@ -318,8 +353,49 @@ const Settings = () => {
                       )}
                     </Button>
                   ) : (
-                    <Button variant="outline" onClick={() => window.location.href = `${API_BASE}/gmail/auth/login`}>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => window.location.href = `${API_BASE}/email/gmail/auth/login`}
+                      disabled={profile?.email_provider === 'microsoft'} // Disable if Microsoft is connected
+                    >
                       Connecter Gmail
+                    </Button>
+                  )}
+                </div>
+
+                {/* Microsoft Integration Card */}
+                <div className="flex items-center justify-between mt-4"> {/* Added margin-top for spacing */}
+                  <div className="flex items-center gap-4">
+                    <Mail className="h-6 w-6 text-blue-500" /> {/* Mail icon with blue color for Microsoft */}
+                    <div>
+                      <p className="font-medium">Microsoft Integration</p>
+                      <p className="text-sm text-muted-foreground">
+                        Connectez votre compte Microsoft pour envoyer des e-mails.
+                      </p>
+                    </div>
+                  </div>
+                  {profile?.email_provider === 'microsoft' ? (
+                    <Button 
+                      variant="destructive" 
+                      onClick={handleDisconnectMicrosoft} 
+                      disabled={isDisconnecting}
+                    >
+                      {isDisconnecting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Déconnexion...
+                        </>
+                      ) : (
+                        "Déconnecter Microsoft"
+                      )}
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => window.location.href = `${API_BASE}/email/microsoft/auth/login`}
+                      disabled={profile?.email_provider === 'gmail'} // Disable if Gmail is connected
+                    >
+                      Connecter Microsoft
                     </Button>
                   )}
                 </div>
@@ -457,7 +533,7 @@ const Settings = () => {
                 <Button variant="default">Mettre à niveau le moyen de paiement</Button>
               </CardFooter>
             </Card>
-          </TabsContent> */}
+          </TabsContent>
           
           {/* Preferences Tab */}
           <TabsContent value="preferences" className="space-y-4 mt-6">

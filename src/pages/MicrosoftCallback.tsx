@@ -8,8 +8,8 @@ import { useAuthStore } from '@/store/authStore'; // Import useAuthStore
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE;
 
-const GmailCallback = () => {
-  usePageTitle("Gmail Integration");
+const MicrosoftCallback = () => {
+  usePageTitle("Microsoft Integration");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
@@ -22,7 +22,7 @@ const GmailCallback = () => {
     if (error) {
       setStatus(`Error: ${error}`);
       toast({
-        title: "Gmail Connection Failed",
+        title: "Microsoft Connection Failed",
         description: `Error: ${error}`,
         variant: "destructive",
       });
@@ -34,21 +34,20 @@ const GmailCallback = () => {
       setStatus("Exchanging authorization code...");
       const exchangeCode = async () => {
         try {
-          const response = await fetch(`${API_BASE_URL}/email/gmail/auth/exchange/`, {
+          const response = await fetch(`${API_BASE_URL}/email/microsoft/auth/exchange/`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              // Include authorization token if required by your backend
               'Authorization': `Bearer ${localStorage.getItem('token')}`,
             },
             body: JSON.stringify({ code }),
           });
 
           if (response.ok) {
-            setStatus("Gmail account connected successfully!");
+            setStatus("Microsoft account connected successfully!");
             toast({
-              title: "Gmail Connected",
-              description: "Your Gmail account has been successfully integrated.",
+              title: "Microsoft Connected",
+              description: "Your Microsoft account has been successfully integrated.",
             });
             // Refresh profile to update has_email_integration status
             const { fetchProfile } = useAuthStore.getState();
@@ -58,7 +57,7 @@ const GmailCallback = () => {
             const errorData = await response.json();
             setStatus(`Error: ${errorData.message || 'Failed to exchange code'}`);
             toast({
-              title: "Gmail Connection Failed",
+              title: "Microsoft Connection Failed",
               description: errorData.message || 'Failed to exchange authorization code.',
               variant: "destructive",
             });
@@ -67,7 +66,7 @@ const GmailCallback = () => {
         } catch (err) {
           setStatus(`Network Error: ${err.message}`);
           toast({
-            title: "Gmail Connection Failed",
+            title: "Microsoft Connection Failed",
             description: `Network error: ${err.message}`,
             variant: "destructive",
           });
@@ -78,8 +77,8 @@ const GmailCallback = () => {
     } else {
       setStatus("No authorization code found.");
       toast({
-        title: "Gmail Connection Failed",
-        description: "No authorization code received from Google.",
+        title: "Microsoft Connection Failed",
+        description: "No authorization code received from Microsoft.",
         variant: "destructive",
       });
       navigate('/settings'); // Redirect to settings or an error page
@@ -90,7 +89,7 @@ const GmailCallback = () => {
     <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Gmail Integration</CardTitle>
+          <CardTitle className="text-2xl">Microsoft Integration</CardTitle>
           <CardDescription>
             {status}
           </CardDescription>
@@ -105,4 +104,4 @@ const GmailCallback = () => {
   );
 };
 
-export default GmailCallback;
+export default MicrosoftCallback;

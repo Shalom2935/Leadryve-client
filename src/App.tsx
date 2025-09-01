@@ -17,6 +17,7 @@ import ResetPassword from "./pages/ResetPassword";
 import CheckEmail from "./pages/CheckEmail";
 import PasswordResetSuccess from "./pages/PasswordResetSuccess";
 import GmailCallback from "./pages/GmailCallback";
+import MicrosoftCallback from "./pages/MicrosoftCallback"; // Import MicrosoftCallback
 import { RequireAuth } from "@/hooks/useAuth";
 import ProfileUpdate from "./pages/ProfileUpdate";
 import { useEffect } from "react";
@@ -43,6 +44,7 @@ const AppRoutes = () => {
       <Route path="/profile-update" element={<RequireAuth><ProfileUpdateWithTitle title="Update Profile" /></RequireAuth>} />
       <Route path="/auth/confirm-email" element={<ConfirmEmailWithTitle title="Confirm Email" />} />
       <Route path="/gmail/callback" element={<GmailCallbackWithTitle title="Gmail Callback" />} />
+      <Route path="/microsoft/callback" element={<MicrosoftCallbackWithTitle title="Microsoft Callback" />} /> {/* New Microsoft Callback Route */}
       <Route path="/" element={<RequireAuth><IndexWithTitle title="Dashboard" /></RequireAuth>} />
       <Route path="/missions" element={<RequireAuth><MissionsWithTitle title="Missions" /></RequireAuth>} />
       <Route path="/missions/create" element={<RequireAuth><CreateMissionWithTitle title="Create Mission" /></RequireAuth>} />
@@ -127,6 +129,11 @@ const NotFoundWithTitle = ({ title }: { title: string }) => {
 const GmailCallbackWithTitle = ({ title }: { title: string }) => {
   usePageTitle(title);
   return <GmailCallback />;
+};
+
+const MicrosoftCallbackWithTitle = ({ title }: { title: string }) => {
+  usePageTitle(title);
+  return <MicrosoftCallback />;
 };
 
 const App = () => (
