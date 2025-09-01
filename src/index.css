@@ -6,6 +6,7 @@
 
 @layer base {
   :root {
+    --navbar-height: 80px; /* Approximate height of the navbar */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 

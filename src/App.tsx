@@ -4,6 +4,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import LandingPage from "./pages/LandingPage";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Pricing from "./pages/Pricing";
 import Missions from "./pages/Missions";
 import MissionDetail from "./pages/MissionDetail";
 import CreateMission from "./pages/CreateMission";
@@ -18,6 +21,7 @@ import CheckEmail from "./pages/CheckEmail";
 import PasswordResetSuccess from "./pages/PasswordResetSuccess";
 import GmailCallback from "./pages/GmailCallback";
 import MicrosoftCallback from "./pages/MicrosoftCallback"; // Import MicrosoftCallback
+import TermsOfService from "./pages/TermsOfService"; // Import TermsOfService
 import { RequireAuth } from "@/hooks/useAuth";
 import ProfileUpdate from "./pages/ProfileUpdate";
 import { useEffect } from "react";
@@ -45,12 +49,16 @@ const AppRoutes = () => {
       <Route path="/auth/confirm-email" element={<ConfirmEmailWithTitle title="Confirm Email" />} />
       <Route path="/gmail/callback" element={<GmailCallbackWithTitle title="Gmail Callback" />} />
       <Route path="/microsoft/callback" element={<MicrosoftCallbackWithTitle title="Microsoft Callback" />} /> {/* New Microsoft Callback Route */}
-      <Route path="/" element={<RequireAuth><IndexWithTitle title="Dashboard" /></RequireAuth>} />
+      <Route path="/" element={<LandingPageWithTitle title="Leadryve - Génération de Leads B2B" />} />
+      <Route path="/dashboard" element={<RequireAuth><IndexWithTitle title="Dashboard" /></RequireAuth>} />
       <Route path="/missions" element={<RequireAuth><MissionsWithTitle title="Missions" /></RequireAuth>} />
       <Route path="/missions/create" element={<RequireAuth><CreateMissionWithTitle title="Create Mission" /></RequireAuth>} />
       <Route path="/missions/:id" element={<RequireAuth><MissionDetailWithTitle title="Mission Details" /></RequireAuth>} />
       {/* <Route path="/leads" element={<RequireAuth><LeadsWithTitle title="Leads" /></RequireAuth>} /> */}
       <Route path="/settings" element={<RequireAuth><SettingsWithTitle title="Settings" /></RequireAuth>} />
+      <Route path="/privacy-policy" element={<PrivacyPolicyWithTitle title="Privacy Policy" />} />
+      <Route path="/terms-of-service" element={<TermsOfServiceWithTitle title="Terms of Service" />} />
+      <Route path="/pricing" element={<PricingWithTitle title="Pricing" />} />
       <Route path="*" element={<RequireAuth><NotFoundWithTitle title="Page Not Found" /></RequireAuth>} />
     </Routes>
   );
@@ -129,6 +137,26 @@ const NotFoundWithTitle = ({ title }: { title: string }) => {
 const GmailCallbackWithTitle = ({ title }: { title: string }) => {
   usePageTitle(title);
   return <GmailCallback />;
+};
+
+const LandingPageWithTitle = ({ title }: { title: string }) => {
+  usePageTitle(title);
+  return <LandingPage />;
+};
+
+const PrivacyPolicyWithTitle = ({ title }: { title: string }) => {
+  usePageTitle(title);
+  return <PrivacyPolicy />;
+};
+
+const PricingWithTitle = ({ title }: { title: string }) => {
+  usePageTitle(title);
+  return <Pricing />;
+};
+
+const TermsOfServiceWithTitle = ({ title }: { title: string }) => {
+  usePageTitle(title);
+  return <TermsOfService />;
 };
 
 const MicrosoftCallbackWithTitle = ({ title }: { title: string }) => {
