@@ -25,7 +25,7 @@ const LandingPage = () => {
             </div>
             <div className="hidden sm:flex items-center space-x-4 sm:space-x-6">
               <Link to="/pricing" className="text-sm sm:text-base text-gray-700 hover:text-leadryve-purple font-medium">Tarifs</Link>
-              <Link to="/privacy-policy" className="text-sm sm:text-base text-gray-700 hover:text-leadryve-purple font-medium">Politique de confidentialité</Link>
+              <a href="https://leadryve.com/privacy-policy" className="text-sm sm:text-base text-gray-700 hover:text-leadryve-purple font-medium">Politique de confidentialité</a>
               <a href="https://app.leadryve.com">
               <Button className="bg-leadryve-purple hover:bg-leadryve-purple/90 text-white font-regular py-2 px-3 sm:px-4 rounded-md text-sm sm:text-base">
                 Commencer maintenant
@@ -45,7 +45,7 @@ const LandingPage = () => {
                     <Link to="/pricing" className="w-full text-gray-700 hover:text-leadryve-purple">Tarifs</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/privacy-policy" className="w-full text-gray-700 hover:text-leadryve-purple">Politique de confidentialité</Link>
+                    <a href="https://leadryve.com/privacy-policy" className="w-full text-gray-700 hover:text-leadryve-purple">Politique de confidentialité</a>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <a href="https://app.leadryve.com" className="w-full bg-leadryve-purple text-white text-center py-2 rounded-md">Commencer maintenant</a>
@@ -189,8 +189,8 @@ const LandingPage = () => {
         <div className="responsive-container text-center text-gray-400 px-4">
           <p className="text-sm sm:text-base">&copy; {new Date().getFullYear()} Leadryve. Tous droits réservés.</p>
           <div className="flex flex-col sm:flex-row justify-center space-y-2 sm:space-y-0 sm:space-x-4 mt-4 text-sm sm:text-base">
-            <Link to="/privacy-policy" className="hover:text-white">Politique de confidentialité</Link>
-            <Link to="/terms-of-service" className="hover:text-white">Conditions d'utilisation</Link>
+            <a href="https://leadryve.com/privacy-policy" className="hover:text-white">Politique de confidentialité</a>
+            <a href="https://leadryve.com/terms-of-service" className="hover:text-white">Conditions d'utilisation</a>
           </div>
         </div>
       </footer>
