@@ -2,63 +2,7 @@
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/index.html",
-      "has": [
-        {
-          "type": "host",
-          "value": "app.leadryve.com"
-        }
-      ]
-    },
-    {
-      "source": "/privacy-policy",
-      "destination": "/index.html",
-      "has": [
-        {
-          "type": "host",
-          "value": "leadryve.com"
-        }
-      ]
-    },
-    {
-      "source": "/terms-of-service",
-      "destination": "/index.html",
-      "has": [
-        {
-          "type": "host",
-          "value": "leadryve.com"
-        }
-      ]
-    },
-    {
-      "source": "/pricing",
-      "destination": "/index.html",
-      "has": [
-        {
-          "type": "host",
-          "value": "leadryve.com"
-        }
-      ]
-    },
-    {
-      "source": "/",
-      "destination": "/index.html",
-      "has": [
-        {
-          "type": "host",
-          "value": "leadryve.com"
-        }
-      ]
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html",
-      "has": [
-        {
-          "type": "host",
-          "value": "www.leadryve.com"
-        }
-      ]
+      "destination": "/index.html"
     }
   ],
   "buildCommand": "npm run build",
