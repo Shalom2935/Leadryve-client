@@ -176,7 +176,7 @@ const LandingPage = () => {
       {/* CTA "Commencer en 30s" */}
       <div className="py-12 sm:py-16 lg:py-24 bg-gray-50 text-center">
         <div className="responsive-container px-4">
-          <Button asChild className="bg-leadryve-purple hover:bg-leadryve-purple/90 text-white font-regular py-3 px-8 sm:py-4 sm:px-10 rounded-md text-base sm:text-xl">
+          <Button asChild className="bg-leadryve-purple hover:bg-leadryve-purple/90 text-white font-regular py-2 px-3 sm:px-4 rounded-md text-sm sm:text-base">
             <a href="https://app.leadryve.com/">Commencer en 30s</a>
           </Button>
         </div>
