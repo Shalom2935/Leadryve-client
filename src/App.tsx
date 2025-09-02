@@ -41,7 +41,7 @@ const AppRoutes = () => {
     initializeAuth();
   }, [initializeAuth]);
 
-  const isAppSubdomain = window.location.hostname.startsWith("app.");
+  const isAppSubdomain = window.location.hostname.startsWith("app.") || import.meta.env.VITE_APP_MODE === 'development';
 
   useEffect(() => {
     if (isAppSubdomain && location.pathname === "/") {
