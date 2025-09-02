@@ -94,7 +94,10 @@ export const Topbar: React.FC<TopbarProps> = ({ children, onToggleSidebar }) => 
               <Link to="/settings">Paramètres du compte</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={logout}>
+            <DropdownMenuItem onClick={() => {
+              logout();
+              window.location.href = "https://leadryve.com";
+            }}>
               Se déconnecter
             </DropdownMenuItem>
           </DropdownMenuContent>

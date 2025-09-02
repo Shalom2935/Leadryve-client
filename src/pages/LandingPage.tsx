@@ -26,11 +26,11 @@ const LandingPage = () => {
             <div className="hidden sm:flex items-center space-x-4 sm:space-x-6">
               <Link to="/pricing" className="text-sm sm:text-base text-gray-700 hover:text-leadryve-purple font-medium">Tarifs</Link>
               <Link to="/privacy-policy" className="text-sm sm:text-base text-gray-700 hover:text-leadryve-purple font-medium">Politique de confidentialité</Link>
-              <Link to="/auth">
+              <a href="https://app.leadryve.com">
               <Button className="bg-leadryve-purple hover:bg-leadryve-purple/90 text-white font-regular py-2 px-3 sm:px-4 rounded-md text-sm sm:text-base">
                 Commencer maintenant
               </Button>
-              </Link>
+              </a>
             </div>
             {/* Mobile Menu */}
             <div className="sm:hidden flex items-center">
@@ -47,8 +47,8 @@ const LandingPage = () => {
                   <DropdownMenuItem>
                     <Link to="/privacy-policy" className="w-full text-gray-700 hover:text-leadryve-purple">Politique de confidentialité</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/auth" className="w-full bg-leadryve-purple text-white text-center py-2 rounded-md">Commencer maintenant</Link>
+                  <DropdownMenuItem asChild>
+                    <a href="https://app.leadryve.com" className="w-full bg-leadryve-purple text-white text-center py-2 rounded-md">Commencer maintenant</a>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -67,7 +67,7 @@ const LandingPage = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-6">
               <Button asChild className="bg-leadryve-purple hover:bg-leadryve-purple/90 text-white font-regular py-3 px-6 sm:px-8 rounded-md text-sm sm:text-md">
-                <Link to="/auth">Commencer</Link>
+                <a href="https://app.leadryve.com/">Commencer</a>
               </Button>
               <Button variant="outline" className="border-leadryve-purple text-leadryve-purple hover:bg-leadryve-purple/10 hover:border-[3px] font-regular py-3 px-6 sm:px-8 rounded-md text-sm sm:text-md">
                 <Play className="mr-2 h-4 w-4" /> Voir la démo
@@ -177,7 +177,7 @@ const LandingPage = () => {
       <div className="py-12 sm:py-16 lg:py-24 bg-gray-50 text-center">
         <div className="responsive-container px-4">
           <Button asChild className="bg-leadryve-purple hover:bg-leadryve-purple/90 text-white font-regular py-3 px-8 sm:py-4 sm:px-10 rounded-md text-base sm:text-xl">
-            <Link to="/auth">Commencer en 30s</Link>
+            <a href="https://app.leadryve.com/">Commencer en 30s</a>
           </Button>
         </div>
       </div>
