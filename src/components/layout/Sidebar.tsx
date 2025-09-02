@@ -101,7 +101,10 @@ export const Sidebar: React.FC<{ onCollapse?: (collapsed: boolean) => void }> = 
           variant="ghost" 
           size={collapsed && !isMobile ? "icon" : "sm"} 
           className="text-slate-600 w-full"
-          onClick={logout}
+          onClick={() => {
+              logout();
+              window.location.href = "https://leadryve.com";
+            }}
         >
           <LogOut size={16} />
           {(!collapsed || isMobile) && <span className="ml-2">Se déconnecter</span>}
