@@ -74,13 +74,17 @@ const CreateMission = () => {
   };
 
   const nextStep = () => {
-    const { name, target_location, target_sector, secteur_autre } = formData;
+    const { name, target_location, target_sector, secteur_autre, lead_count } = formData;
     if (!name || !target_location || !target_sector) {
       toast.error('Veuillez remplir tous les champs obligatoires.');
       return;
     }
     if (target_sector === 'Autre' && !secteur_autre) {
       toast.error("Veuillez préciser le secteur d'activité.");
+      return;
+    }
+    if (Number(lead_count) <= 0) {
+      toast.error('L\'objectif de leads doit être supérieur à 0.');
       return;
     }
     if (step < totalSteps) setStep(step + 1);
@@ -94,6 +98,14 @@ const CreateMission = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    // Add validation for lead_count before submitting
+    if (Number(formData.lead_count) <= 0) {
+      toast.error('L\'objectif de leads doit être supérieur à 0.');
+      setLoading(false);
+      return;
+    }
+
     try {
       const token = localStorage.getItem('token');
       const secteur = formData.target_sector === 'Autre' ? formData.secteur_autre : formData.target_sector;
