@@ -65,11 +65,11 @@ export const dashboardMissionsSchema = z.array(missionSchema);
 export const missionLeadSchema = z.object({
   id: z.number(),
   company_name: z.string(),
-  address: z.string().optional(),
+  address: z.string().optional().nullable(),
   score: z.number(),
-  email: z.string().min(1).optional(),
-  phone: z.array(z.string().optional()),
-  reason: z.string().optional(),
+  email: z.string().min(1).nullable().optional(),
+  phone: z.array(z.string().optional()).nullable(),
+  reason: z.string().optional().nullable(),
   created_at: z.string(), // ISO date
 });
 
