@@ -46,9 +46,15 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { missionSchema } from '@/lib/schemas';
-import { missionLeadsListSchema } from '@/lib/schemas';
-import { SelectScrollUpButton } from '@/components/ui/select';
+import { missionSchema, paginatedMissionLeadsSchema } from '@/lib/schemas';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import ReportDialog from '@/components/ReportDialog'; // Import the new component
 import { useProfile } from '@/hooks/useProfile'; // Import useProfile hook
 
@@ -68,6 +74,9 @@ const MissionDetail = () => {
   const [reportModalOpen, setReportModalOpen] = useState(false); // New state for report dialog
   const { profile } = useProfile(); // Get user profile for sender email
   const [isSending, setIsSending] = useState(false); // New state for button loading
+  const [currentPage, setCurrentPage] = useState(1);
+  const [leadsPerPage] = useState(10); // You can make this configurable
+  const [totalLeads, setTotalLeads] = useState(0);
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window !== 'undefined') {
       return window.innerWidth < 640;
@@ -109,11 +118,12 @@ const MissionDetail = () => {
       }
     };
 
-    const fetchLeadsData = async () => {
+    const fetchLeadsData = async (page: number, limit: number) => {
       if (!id) return;
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`${API_BASE}/missions/${id}/leads/`, {
+        const skip = (page - 1) * limit;
+        const res = await fetch(`${API_BASE}/missions/${id}/leads/?skip=${skip}&limit=${limit}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -121,12 +131,13 @@ const MissionDetail = () => {
         if (!res.ok) throw new Error('Erreur lors du chargement des leads');
         const data = await res.json();
         console.log('Raw leads data received:', data); // Log raw data
-        const parsed = missionLeadsListSchema.safeParse(data.items);
+        const parsed = paginatedMissionLeadsSchema.safeParse(data);
         if (!parsed.success) {
           console.error('Leads schema parsing error:', parsed.error); // Log parsing error
           throw new Error('Format de données inattendu');
         }
-        setLeads(parsed.data); // Use parsed data
+        setLeads(parsed.data.items); // Use parsed data
+        setTotalLeads(parsed.data.count);
         console.log('Parsed leads data set to state:', parsed.data); // Log parsed data
       } catch (e: any) {
         // Optionally handle error
@@ -136,7 +147,7 @@ const MissionDetail = () => {
     // Initial load for both mission and leads
     const initialFetch = async () => {
       setLoading(true);
-      await Promise.all([fetchMissionData(), fetchLeadsData()]);
+      await Promise.all([fetchMissionData(), fetchLeadsData(currentPage, leadsPerPage)]);
       setLoading(false);
     };
 
@@ -148,7 +159,7 @@ const MissionDetail = () => {
 
     if (mission && mission.status !== 'completed') {
       missionIntervalId = setInterval(fetchMissionData, 5000);
-      leadsIntervalId = setInterval(fetchLeadsData, 5000);
+      leadsIntervalId = setInterval(() => fetchLeadsData(currentPage, leadsPerPage), 5000);
     }
 
     // Cleanup function to clear intervals
@@ -160,7 +171,7 @@ const MissionDetail = () => {
         clearInterval(leadsIntervalId);
       }
     };
-  }, [id, mission?.status]); // Re-run effect if id or mission status changes
+  }, [id, mission?.status, currentPage, leadsPerPage]); // Re-run effect if id or mission status changes
 
   const getScoreClass = (score: number) => {
     if (score >= 80) return 'lead-score-high';
@@ -253,6 +264,14 @@ const MissionDetail = () => {
       //toast.error("Une erreur inattendue est survenue. Veuillez réessayer.");
     } finally {
       setIsSending(false); // Reset loading state
+    }
+  };
+
+  const totalPages = Math.ceil(totalLeads / leadsPerPage);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
     }
   };
 
@@ -486,6 +505,37 @@ const MissionDetail = () => {
                 )}  
             </CardContent>
           </Card>
+          {totalLeads > leadsPerPage && (
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    href="#" 
+                    onClick={() => handlePageChange(currentPage - 1)} 
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : undefined}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <PaginationItem key={page}>
+                    <PaginationLink 
+                      href="#" 
+                      isActive={page === currentPage} 
+                      onClick={() => handlePageChange(page)}
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext 
+                    href="#" 
+                    onClick={() => handlePageChange(currentPage + 1)} 
+                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : undefined}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
         </div>
       </div>
     </AppLayout>

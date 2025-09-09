@@ -73,7 +73,10 @@ export const missionLeadSchema = z.object({
   created_at: z.string(), // ISO date
 });
 
-export const missionLeadsListSchema = z.array(missionLeadSchema);
+export const paginatedMissionLeadsSchema = z.object({
+  count: z.number(),
+  items: z.array(missionLeadSchema),
+});
 
 export const profileSchema = z.object({
   name: z.string().min(1, 'Nom requis'),
