@@ -94,6 +94,13 @@ const MissionDetail = () => {
         });
         if (!res.ok) throw new Error('Erreur lors du chargement de la mission');
         const data = await res.json();
+        
+        // Check for mission_completed flag and override status/progress
+        if (data.mission_completed === 1) {
+          data.status = 'completed';
+          data.progress = 100;
+        }
+
         const parsed = missionSchema.safeParse(data);
         if (!parsed.success) throw new Error('Format de mission invalide');
         setMission(parsed.data);
