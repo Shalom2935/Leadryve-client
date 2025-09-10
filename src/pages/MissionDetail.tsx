@@ -235,7 +235,7 @@ const MissionDetail = () => {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ lead_id: lead.id }),
+          body: JSON.stringify({ "lead_id": lead.id }),
         });
 
         if (!res.ok) {
