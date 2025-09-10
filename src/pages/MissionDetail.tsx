@@ -143,17 +143,8 @@ const MissionDetail = () => {
           console.error('Leads schema parsing error:', parsed.error); // Log parsing error
           throw new Error('Format de données inattendu');
         }
-        // Simulate adding contact_status and draft_message for demonstration
-        const updatedLeads = parsed.data.items.map((lead: any, index: number) => {
-          if (index === 0) { // First lead has a draft
-            return { ...lead, contact_status: 'draft', draft_message: 'This is a draft message for TechFlow Solutions.' };
-          }
-          if (index === 1) { // Second lead has been sent
-            return { ...lead, contact_status: 'sent', draft_message: 'This message has been sent to DataSphere Inc.' };
-          }
-          return { ...lead, contact_status: 'pending', draft_message: '' }; // Default for others
-        });
-        setLeads(updatedLeads); // Use parsed data
+        const leads = parsed.data.items
+        setLeads(leads); // Use parsed data
         setTotalLeads(parsed.data.count);
         console.log('Parsed leads data set to state:', parsed.data); // Log parsed data
       } catch (e: any) {
@@ -235,7 +226,7 @@ const MissionDetail = () => {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({ "lead_id": Number(lead.id) }),
+          body: JSON.stringify({ lead_id: lead.id }),
         });
 
         if (!res.ok) {
@@ -484,14 +475,18 @@ const MissionDetail = () => {
                           variant="outline" 
                           size="sm" 
                           onClick={() => openContactModal(lead)}
-                          disabled={lead.contact_status === 'sent'}
+                          disabled={lead.contact_status === 'sent' || !lead.email}
                         >
                           Contact
                         </Button>
                       </TooltipTrigger>
-                      {lead.contact_status === 'sent' && (
+                      {(lead.contact_status === 'sent' || !lead.email) && (
                         <TooltipContent>
-                          <p>Message already sent to this lead.</p>
+                          {lead.contact_status === 'sent' ? (
+                            <p>Message already sent to this lead.</p>
+                          ) : (
+                            <p>No email available for this lead.</p>
+                          )}
                         </TooltipContent>
                       )}
                     </Tooltip>
