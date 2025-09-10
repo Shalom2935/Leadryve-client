@@ -219,35 +219,48 @@ const MissionDetail = () => {
       setMessage(lead.draft_message);
       setIsGeneratingMessage(false);
     } else if (lead.contact_status === 'sent') {
-      setMessage(lead.draft_message || "Message already sent."); // Display sent message if available
+      setMessage(lead.draft_message || "Message already sent.");
       setIsGeneratingMessage(false);
     } else {
-      // Simulate API call for AI message generation
+      // 1. Set loading state and clear previous message
       setIsGeneratingMessage(true);
-      setMessage(''); // Clear previous message
-      try {
-        // In a real application, this would be an API call to your AI service
-        // const token = localStorage.getItem('token');
-        // const res = await fetch(`${API_BASE}/leads/${lead.id}/generate-message`, {
-        //   headers: { Authorization: `Bearer ${token}` },
-        // });
-        // const data = await res.json();
-        // setMessage(data.generatedMessage);
+      setMessage('');
 
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 2000)); 
-        const generatedMsg = `Bonjour ${lead.company_name},\n\nJe suis tombé sur votre entreprise et j'aimerais discuter de la manière dont notre solution pourrait être précieuse pour votre activité.\n\nCordialement,\n[Votre Nom] (AI Generated)`;
-        setMessage(generatedMsg);
-        // Update lead status to draft in local state
-        setLeads(prevLeads => 
-          prevLeads.map(l => 
-            l.id === lead.id ? { ...l, contact_status: 'draft', draft_message: generatedMsg } : l
+      try {
+        // 2. Call the new centralized generator endpoint
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_BASE}/messages/generate/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ lead_id: lead.id }),
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || "Failed to generate message");
+        }
+
+        const draft = await res.json();
+
+        // 3. Update state with the response
+        setMessage(draft.body);
+        setEmailSubject(draft.subject);
+
+        // 4. Update lead status in local state to reflect the new draft
+        setLeads(prevLeads =>
+          prevLeads.map(l =>
+            l.id === lead.id ? { ...l, contact_status: 'draft', draft_message: draft.body } : l
           )
         );
-      } catch (err) {
-        toast.error("Failed to generate message.");
-        setMessage("Error generating message.");
+
+      } catch (err: any) {
+        toast.error(err.message || "An error occurred while generating the message.");
+        setMessage("Error generating message."); // Show error in textarea
       } finally {
+        // 5. Unset loading state
         setIsGeneratingMessage(false);
       }
     }
