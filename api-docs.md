@@ -255,4 +255,53 @@
 - 401 Unauthorized (si token manquant ou invalide)
 - 404 Not Found (si la mission ou les leads n'existent pas)
 
+### GET /leads/{id}/generate-message
+- Description : Génère un message de contact personnalisé par l'IA pour un lead spécifique.
+- URL params :
+  - id (number) : Identifiant unique du lead
+- Headers :
+  - Authorization: Bearer <token>
+- Réponse :
+  - 200 OK
+  - Body (JSON) :
+    - generatedMessage (string) : Le message de contact généré par l'IA.
+- Exemple de réponse :
+```json
+{
+  "generatedMessage": "Bonjour [Nom de l'entreprise],\n\nJe suis tombé sur votre entreprise et j'aimerais discuter de la manière dont notre solution pourrait être précieuse pour votre activité.\n\nCordialement,\n[Votre Nom]"
+}
+```
+- 401 Unauthorized (si token manquant ou invalide)
+- 404 Not Found (si le lead n'existe pas)
 
+### PUT /leads/{id}/contact-status
+- Description : Met à jour le statut de contact et le message brouillon d'un lead.
+- URL params :
+  - id (number) : Identifiant unique du lead
+- Headers :
+  - Authorization: Bearer <token>
+  - Content-Type: application/json
+- Body (JSON) :
+  - contact_status (string, requis) : Nouveau statut de contact ('draft' ou 'sent').
+  - draft_message (string, optionnel) : Le message brouillon actuel ou le message envoyé.
+- Réponse :
+  - 200 OK
+  - Body (JSON) :
+    - success (boolean) : Indique si la mise à jour a réussi.
+    - lead (object) : L'objet lead mis à jour.
+- Exemple de réponse :
+```json
+{
+  "success": true,
+  "lead": {
+    "id": 1,
+    "companyName": "TechFlow Solutions",
+    "contact_status": "draft",
+    "draft_message": "This is a draft message for TechFlow Solutions."
+    // ... autres propriétés du lead
+  }
+}
+```
+- 400 Bad Request (erreur de validation)
+- 401 Unauthorized (si token manquant ou invalide)
+- 404 Not Found (si le lead n'existe pas)

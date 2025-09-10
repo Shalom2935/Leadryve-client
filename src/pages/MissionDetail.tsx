@@ -24,6 +24,12 @@ import {
   MoreHorizontal,
   Loader2 // Import Loader2
 } from 'lucide-react';
+import {
+  Tooltip, // Import Tooltip
+  TooltipContent, // Import TooltipContent
+  TooltipProvider, // Import TooltipProvider
+  TooltipTrigger // Import TooltipTrigger
+} from '@/components/ui/tooltip';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -74,6 +80,7 @@ const MissionDetail = () => {
   const [reportModalOpen, setReportModalOpen] = useState(false); // New state for report dialog
   const { profile } = useProfile(); // Get user profile for sender email
   const [isSending, setIsSending] = useState(false); // New state for button loading
+  const [isGeneratingMessage, setIsGeneratingMessage] = useState(false); // New state for AI message generation
   const [currentPage, setCurrentPage] = useState(1);
   const [leadsPerPage] = useState(10); // You can make this configurable
   const [totalLeads, setTotalLeads] = useState(0);
@@ -136,7 +143,17 @@ const MissionDetail = () => {
           console.error('Leads schema parsing error:', parsed.error); // Log parsing error
           throw new Error('Format de données inattendu');
         }
-        setLeads(parsed.data.items); // Use parsed data
+        // Simulate adding contact_status and draft_message for demonstration
+        const updatedLeads = parsed.data.items.map((lead: any, index: number) => {
+          if (index === 0) { // First lead has a draft
+            return { ...lead, contact_status: 'draft', draft_message: 'This is a draft message for TechFlow Solutions.' };
+          }
+          if (index === 1) { // Second lead has been sent
+            return { ...lead, contact_status: 'sent', draft_message: 'This message has been sent to DataSphere Inc.' };
+          }
+          return { ...lead, contact_status: 'pending', draft_message: '' }; // Default for others
+        });
+        setLeads(updatedLeads); // Use parsed data
         setTotalLeads(parsed.data.count);
         console.log('Parsed leads data set to state:', parsed.data); // Log parsed data
       } catch (e: any) {
@@ -192,12 +209,48 @@ const MissionDetail = () => {
     }
   };
 
-  const openContactModal = (lead: any) => {
+  const openContactModal = async (lead: any) => {
     setSelectedLead(lead);
     setRecipientEmail(lead.email || '');
     setEmailSubject(`Proposition de valeur pour ${lead.company_name}`); // Default subject
-    setMessage(`Bonjour ${lead.company_name},\n\nJe suis tombé sur votre entreprise et j'aimerais discuter de la manière dont notre solution pourrait être précieuse pour votre activité.\n\nCordialement,\n[Votre Nom]`);
     setContactModalOpen(true);
+
+    if (lead.contact_status === 'draft' && lead.draft_message) {
+      setMessage(lead.draft_message);
+      setIsGeneratingMessage(false);
+    } else if (lead.contact_status === 'sent') {
+      setMessage(lead.draft_message || "Message already sent."); // Display sent message if available
+      setIsGeneratingMessage(false);
+    } else {
+      // Simulate API call for AI message generation
+      setIsGeneratingMessage(true);
+      setMessage(''); // Clear previous message
+      try {
+        // In a real application, this would be an API call to your AI service
+        // const token = localStorage.getItem('token');
+        // const res = await fetch(`${API_BASE}/leads/${lead.id}/generate-message`, {
+        //   headers: { Authorization: `Bearer ${token}` },
+        // });
+        // const data = await res.json();
+        // setMessage(data.generatedMessage);
+
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 2000)); 
+        const generatedMsg = `Bonjour ${lead.company_name},\n\nJe suis tombé sur votre entreprise et j'aimerais discuter de la manière dont notre solution pourrait être précieuse pour votre activité.\n\nCordialement,\n[Votre Nom] (AI Generated)`;
+        setMessage(generatedMsg);
+        // Update lead status to draft in local state
+        setLeads(prevLeads => 
+          prevLeads.map(l => 
+            l.id === lead.id ? { ...l, contact_status: 'draft', draft_message: generatedMsg } : l
+          )
+        );
+      } catch (err) {
+        toast.error("Failed to generate message.");
+        setMessage("Error generating message.");
+      } finally {
+        setIsGeneratingMessage(false);
+      }
+    }
   };
 
   const openReportModal = (lead: any) => { // New function to open report dialog
@@ -254,10 +307,12 @@ const MissionDetail = () => {
       setMessage('');
       setRecipientEmail('');
       setEmailSubject('');
-      // Optionally update lead status here if your backend provides a way to do so
-      // toast(`Statut du lead mis à jour sur "Contacté"`, {
-      //   description: selectedLead.company_name,
-      // });
+      // Update lead status to sent in local state
+      setLeads(prevLeads => 
+        prevLeads.map(l => 
+          l.id === leadId ? { ...l, contact_status: 'sent', draft_message: message } : l
+        )
+      );
 
     } catch (error: any) {
       console.error("Une erreur inattendue est survenue lors de l'envoi:", error.message);
@@ -409,7 +464,25 @@ const MissionDetail = () => {
                   )}
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm" onClick={() => openContactModal(lead)}>Contact</Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => openContactModal(lead)}
+                          disabled={lead.contact_status === 'sent'}
+                        >
+                          Contact
+                        </Button>
+                      </TooltipTrigger>
+                      {lead.contact_status === 'sent' && (
+                        <TooltipContent>
+                          <p>Message already sent to this lead.</p>
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                   {/* autres actions... */}
                 </div>
               </CardContent>
@@ -476,13 +549,25 @@ const MissionDetail = () => {
                                                       </TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end gap-2">
-                                <Button 
-                                  variant="outline" 
-                                  size="sm"
-                                  onClick={() => openContactModal(lead)}
-                                >
-                                  Contact
-                                </Button>
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm"
+                                        onClick={() => openContactModal(lead)}
+                                        disabled={lead.contact_status === 'sent'}
+                                      >
+                                        Contact
+                                      </Button>
+                                    </TooltipTrigger>
+                                    {lead.contact_status === 'sent' && (
+                                      <TooltipContent>
+                                        <p>Message already sent to this lead.</p>
+                                      </TooltipContent>
+                                    )}
+                                  </Tooltip>
+                                </TooltipProvider>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" size="sm">
@@ -579,13 +664,20 @@ const MissionDetail = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="message">Message</Label>
-              <Textarea
-                id="message"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                rows={8}
-                placeholder="Écrivez votre message ici..."
-              />
+              {isGeneratingMessage ? (
+                <div className="flex items-center justify-center h-32 bg-gray-50 rounded-md">
+                  <Loader2 className="h-8 w-8 animate-spin text-leadryve-purple" />
+                  <span className="ml-2 text-gray-600">Génération du message par l'IA...</span>
+                </div>
+              ) : (
+                <Textarea
+                  id="message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  rows={8}
+                  placeholder="Écrivez votre message ici..."
+                />
+              )}
             </div>
           </div>
           <DialogFooter>
