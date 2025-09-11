@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { 
@@ -22,13 +22,14 @@ import {
   Phone, 
   Linkedin, 
   MoreHorizontal,
-  Loader2 // Import Loader2
+  Loader2,
+  Save
 } from 'lucide-react';
 import {
-  Tooltip, // Import Tooltip
-  TooltipContent, // Import TooltipContent
-  TooltipProvider, // Import TooltipProvider
-  TooltipTrigger // Import TooltipTrigger
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
@@ -61,8 +62,9 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination';
-import ReportDialog from '@/components/ReportDialog'; // Import the new component
-import { useProfile } from '@/hooks/useProfile'; // Import useProfile hook
+import ReportDialog from '@/components/ReportDialog';
+import { useProfile } from '@/hooks/useProfile';
+import { MessageLoader } from '@/components/ui/MessageLoader'; // Assuming you create this
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -75,14 +77,15 @@ const MissionDetail = () => {
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
   const [message, setMessage] = useState('');
-  const [recipientEmail, setRecipientEmail] = useState(''); // New state for recipient email
-  const [emailSubject, setEmailSubject] = useState(''); // New state for email subject
-  const [reportModalOpen, setReportModalOpen] = useState(false); // New state for report dialog
-  const { profile } = useProfile(); // Get user profile for sender email
-  const [isSending, setIsSending] = useState(false); // New state for button loading
-  const [isGeneratingMessage, setIsGeneratingMessage] = useState(false); // New state for AI message generation
+  const [recipientEmail, setRecipientEmail] = useState('');
+  const [emailSubject, setEmailSubject] = useState('');
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const { profile } = useProfile();
+  const [isSending, setIsSending] = useState(false);
+  const [isGeneratingMessage, setIsGeneratingMessage] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [leadsPerPage] = useState(10); // You can make this configurable
+  const [leadsPerPage] = useState(10);
   const [totalLeads, setTotalLeads] = useState(0);
   const [isMobile, setIsMobile] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -98,6 +101,131 @@ const MissionDetail = () => {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const fetchMessage = useCallback(async (leadId) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${API_BASE}/messages/${leadId}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) {
+        throw new Error('Failed to fetch message');
+      }
+      const data = await res.json();
+      if (data.status !== 'writing') {
+        setMessage(data.body);
+        setEmailSubject(data.subject);
+        setIsGeneratingMessage(false);
+        setLeads(prevLeads =>
+          prevLeads.map(l =>
+            l.id === leadId ? { ...l, contact_status: 'draft', draft_message: data.body } : l
+          )
+        );
+        return true; // Polling complete
+      }
+    } catch (err) {
+      toast.error("Failed to fetch message update.");
+      setIsGeneratingMessage(false);
+      return true; // Stop polling on error
+    }
+    return false; // Polling continues
+  }, []);
+
+  const openContactModal = async (lead: any) => {
+    setSelectedLead(lead);
+    setRecipientEmail(lead.email || '');
+    setContactModalOpen(true);
+  
+    // If message is already generated and in a final state
+    if ((lead.contact_status === 'draft' || lead.contact_status === 'sent') && lead.draft_message) {
+      setMessage(lead.draft_message);
+      setEmailSubject(`Proposition de valeur pour ${lead.company_name}`);
+      setIsGeneratingMessage(false);
+      return;
+    }
+  
+    setIsGeneratingMessage(true);
+    setMessage('');
+    setEmailSubject('');
+  
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/messages/generate/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ lead_id: lead.id }),
+      });
+  
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.detail || "Failed to initiate message generation");
+      }
+  
+      const draft = await res.json();
+  
+      if (draft.status === 'writing') {
+        const pollInterval = setInterval(async () => {
+          const done = await fetchMessage(lead.id);
+          if (done) {
+            clearInterval(pollInterval);
+          }
+        }, 3000); // Poll every 3 seconds
+      } else {
+        setMessage(draft.body);
+        setEmailSubject(draft.subject);
+        setIsGeneratingMessage(false);
+        setLeads(prevLeads =>
+          prevLeads.map(l =>
+            l.id === lead.id ? { ...l, contact_status: 'draft', draft_message: draft.body } : l
+          )
+        );
+      }
+    } catch (err: any) {
+      toast.error(err.message || "An error occurred.");
+      setIsGeneratingMessage(false);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    if (!selectedLead) return;
+    setIsSavingDraft(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/messages/${selectedLead.id}/`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          subject: emailSubject,
+          body: message,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to save draft');
+      }
+
+      const updatedDraft = await res.json();
+      setLeads(prevLeads =>
+        prevLeads.map(l =>
+          l.id === selectedLead.id ? { ...l, contact_status: 'draft', draft_message: updatedDraft.body } : l
+        )
+      );
+      toast.success('Draft saved successfully!');
+    } catch (err) {
+      toast.error('Failed to save draft.');
+    } finally {
+      setIsSavingDraft(false);
+    }
+  };
+
   useEffect(() => {
     const fetchMissionData = async () => {
       setError('');
@@ -111,7 +239,6 @@ const MissionDetail = () => {
         if (!res.ok) throw new Error('Erreur lors du chargement de la mission');
         const data = await res.json();
         
-        // Check for mission_completed flag and override status/progress
         if (data.mission_completed === 1) {
           data.status = 'completed';
           data.progress = 100;
@@ -137,22 +264,17 @@ const MissionDetail = () => {
         });
         if (!res.ok) throw new Error('Erreur lors du chargement des leads');
         const data = await res.json();
-        console.log('Raw leads data received:', data); // Log raw data
         const parsed = paginatedMissionLeadsSchema.safeParse(data);
         if (!parsed.success) {
-          console.error('Leads schema parsing error:', parsed.error); // Log parsing error
           throw new Error('Format de données inattendu');
         }
-        const leads = parsed.data.items
-        setLeads(leads); // Use parsed data
+        setLeads(parsed.data.items);
         setTotalLeads(parsed.data.count);
-        console.log('Parsed leads data set to state:', parsed.data); // Log parsed data
       } catch (e: any) {
         // Optionally handle error
       }
     };
 
-    // Initial load for both mission and leads
     const initialFetch = async () => {
       setLoading(true);
       await Promise.all([fetchMissionData(), fetchLeadsData(currentPage, leadsPerPage)]);
@@ -161,7 +283,6 @@ const MissionDetail = () => {
 
     initialFetch();
 
-    // Set up polling for mission and leads if mission is not completed
     let missionIntervalId: NodeJS.Timeout;
     let leadsIntervalId: NodeJS.Timeout;
 
@@ -170,24 +291,17 @@ const MissionDetail = () => {
       leadsIntervalId = setInterval(() => fetchLeadsData(currentPage, leadsPerPage), 5000);
     }
 
-    // Cleanup function to clear intervals
     return () => {
-      if (missionIntervalId) {
-        clearInterval(missionIntervalId);
-      }
-      if (leadsIntervalId) {
-        clearInterval(leadsIntervalId);
-      }
+      if (missionIntervalId) clearInterval(missionIntervalId);
+      if (leadsIntervalId) clearInterval(leadsIntervalId);
     };
-  }, [id, mission?.status, currentPage, leadsPerPage]); // Re-run effect if id or mission status changes
+  }, [id, mission?.status, currentPage, leadsPerPage]);
 
   const getScoreClass = (score: number) => {
     if (score >= 80) return 'lead-score-high';
     if (score >= 60) return 'lead-score-medium';
     return 'lead-score-low';
   };
-
-  
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -200,64 +314,7 @@ const MissionDetail = () => {
     }
   };
 
-  const openContactModal = async (lead: any) => {
-    setSelectedLead(lead);
-    setRecipientEmail(lead.email || '');
-    setEmailSubject(`Proposition de valeur pour ${lead.company_name}`); // Default subject
-    setContactModalOpen(true);
-
-    if (lead.contact_status === 'draft' && lead.draft_message) {
-      setMessage(lead.draft_message);
-      setIsGeneratingMessage(false);
-    } else if (lead.contact_status === 'sent') {
-      setMessage(lead.draft_message || "Message already sent.");
-      setIsGeneratingMessage(false);
-    } else {
-      // 1. Set loading state and clear previous message
-      setIsGeneratingMessage(true);
-      setMessage('');
-
-      try {
-        // 2. Call the new centralized generator endpoint
-        const token = localStorage.getItem('token');
-        const res = await fetch(`${API_BASE}/messages/generate/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ lead_id: lead.id }),
-        });
-
-        if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.detail || "Failed to generate message");
-        }
-
-        const draft = await res.json();
-
-        // 3. Update state with the response
-        setMessage(draft.body);
-        setEmailSubject(draft.subject);
-
-        // 4. Update lead status in local state to reflect the new draft
-        setLeads(prevLeads =>
-          prevLeads.map(l =>
-            l.id === lead.id ? { ...l, contact_status: 'draft', draft_message: draft.body } : l
-          )
-        );
-
-      } catch (err: any) {
-        toast.error(err.message || "An error occurred while generating the message.");
-        setMessage("Error generating message."); // Show error in textarea
-      } finally {
-        // 5. Unset loading state
-        setIsGeneratingMessage(false);
-      }
-    }
-  };
-
-  const openReportModal = (lead: any) => { // New function to open report dialog
+  const openReportModal = (lead: any) => {
     setSelectedLead(lead);
     setReportModalOpen(true);
   };
@@ -268,7 +325,7 @@ const MissionDetail = () => {
       return;
     }
 
-    setIsSending(true); // Set loading state
+    setIsSending(true);
 
     try {
       const token = localStorage.getItem('token');
@@ -311,7 +368,6 @@ const MissionDetail = () => {
       setMessage('');
       setRecipientEmail('');
       setEmailSubject('');
-      // Update lead status to sent in local state
       setLeads(prevLeads => 
         prevLeads.map(l => 
           l.id === leadId ? { ...l, contact_status: 'sent', draft_message: message } : l
@@ -319,10 +375,9 @@ const MissionDetail = () => {
       );
 
     } catch (error: any) {
-      console.error("Une erreur inattendue est survenue lors de l'envoi:", error.message);
-      //toast.error("Une erreur inattendue est survenue. Veuillez réessayer.");
+      console.error("Une erreur inattendue est survenue lors de l\'envoi:", error.message);
     } finally {
-      setIsSending(false); // Reset loading state
+      setIsSending(false);
     }
   };
 
@@ -358,14 +413,6 @@ const MissionDetail = () => {
             </div>
             <p className="text-muted-foreground">Mission ID: {mission.id}</p>
           </div>
-          {/* <div className="flex gap-2">
-            <Button variant="outline">
-              <Download className="h-4 w-4 mr-1" /> Export
-            </Button>
-            <Button>
-              Edit Mission
-            </Button>
-          </div> */}
         </div>
 
         <div className="grid gap-6 md:grid-cols-2">
@@ -458,7 +505,7 @@ const MissionDetail = () => {
                     <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => openReportModal(lead)} // Use new function
+                    onClick={() => openReportModal(lead)}
                     className=" bg-none text-purple-600 px-3 py-1 font-semibold hover:text-purple-400 transition"
                   >
                     Afficher le rapport
@@ -491,7 +538,6 @@ const MissionDetail = () => {
                       )}
                     </Tooltip>
                   </TooltipProvider>
-                  {/* autres actions... */}
                 </div>
               </CardContent>
             </Card>
@@ -546,7 +592,7 @@ const MissionDetail = () => {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => openReportModal(lead)} // Use new function
+                                    onClick={() => openReportModal(lead)}
                                     className=" bg-none text-purple-600 px-3 py-1 font-semibold hover:text-purple-400 transition"
                                   >
                                     Afficher le rapport
@@ -595,7 +641,7 @@ const MissionDetail = () => {
                       </TableBody>
                     </Table>
                   </div>
-                )}  
+                )}
             </CardContent>
           </Card>
           {totalLeads > leadsPerPage && (
@@ -635,7 +681,7 @@ const MissionDetail = () => {
 
     {selectedLead && (
       <Dialog open={contactModalOpen} onOpenChange={setContactModalOpen}>
-        <DialogContent className="sm:max-w-lg h-[90%] overflow-y-auto"> {/* Adjusted width and added overflow */}
+        <DialogContent className="sm:max-w-lg h-[90%] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Contacter {selectedLead.company_name}</DialogTitle>
             <DialogDescription>
@@ -649,7 +695,7 @@ const MissionDetail = () => {
                 id="sender-email"
                 type="email"
                 value={profile?.company_email || ''}
-                readOnly // Sender email is read-only
+                readOnly
                 className="bg-gray-100 dark:bg-gray-800"
               />
             </div>
@@ -673,9 +719,8 @@ const MissionDetail = () => {
             <div className="space-y-2">
               <Label htmlFor="message">Message</Label>
               {isGeneratingMessage ? (
-                <div className="flex items-center justify-center h-32 bg-gray-50 rounded-md">
-                  <Loader2 className="h-8 w-8 animate-spin text-leadryve-purple" />
-                  <span className="ml-2 text-gray-600">Génération du message par l'IA...</span>
+                <div className="flex items-center justify-center h-48 bg-gray-50 rounded-md">
+                  <MessageLoader />
                 </div>
               ) : (
                 <Textarea
@@ -688,16 +733,17 @@ const MissionDetail = () => {
               )}
             </div>
           </div>
-          <DialogFooter>
-            <Button type="submit" onClick={() => handleSendMessage(selectedLead.id)} disabled={isSending}>
+          <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
+            <Button variant="outline" onClick={() => setContactModalOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveDraft} disabled={isSavingDraft || isGeneratingMessage}>
+              {isSavingDraft ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+              Save Draft
+            </Button>
+            <Button type="submit" onClick={() => handleSendMessage(selectedLead.id)} disabled={isSending || isGeneratingMessage}>
               {isSending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Envoi...
-                </>
-              ) : (
-                "Envoyer le message"
-              )}
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              {isSending ? 'Sending...' : 'Send Message'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -717,5 +763,3 @@ const MissionDetail = () => {
 };
 
 export default MissionDetail;
-
-//
