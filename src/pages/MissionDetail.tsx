@@ -411,7 +411,7 @@ const MissionDetail = () => {
               <div className="space-y-2"><Label htmlFor="subject">Sujet</Label><Input id="subject" value={emailSubject} onChange={(e) => setEmailSubject(e.target.value)} /></div>
               <div className="space-y-2">
                 <Label htmlFor="message">Message</Label>
-                {isGeneratingMessage ? <div className="flex items-center justify-center h-48 bg-gray-50 rounded-md"><MessageLoader /></div> : <Textarea id="message" value={message} onChange={(e) => setMessage(e.target.value)} rows={8} placeholder="Écrivez votre message ici..." />}
+                {isGeneratingMessage ? <div className="flex items-center justify-center rounded-md bg-gray-50 dark:bg-gray-900 min-h-[200px]"><MessageLoader /></div> : <Textarea id="message" value={message} onChange={(e) => setMessage(e.target.value)} rows={8} placeholder="Écrivez votre message ici..." />}
               </div>
             </div>
             <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
