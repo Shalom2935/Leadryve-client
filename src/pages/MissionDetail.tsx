@@ -331,6 +331,28 @@ const MissionDetail = () => {
 
   const totalPages = Math.ceil(totalLeads / leadsPerPage);
 
+  const getScoreClass = (score: number) => {
+    if (score >= 80) return 'lead-score-high';
+    if (score >= 60) return 'lead-score-medium';
+    return 'lead-score-low';
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'in_progress':
+        return <Badge className="bg-blue-100 text-blue-800">In Progress</Badge>;
+      case 'completed':
+        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
+      default:
+        return <Badge variant="outline">Unknown</Badge>;
+    }
+  };
+
+  const openReportModal = (lead: any) => {
+    setSelectedLead(lead);
+    setReportModalOpen(true);
+  };
+
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
@@ -688,6 +710,29 @@ const MissionDetail = () => {
               Save Draft
             </Button>
             <Button type="submit" onClick={() => handleSendMessage(selectedLead.id)} disabled={isSending || isGeneratingMessage}>
+              {isSending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              {isSending ? 'Sending...' : 'Send Message'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    )}
+
+    {selectedLead && (
+      <ReportDialog
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        companyName={selectedLead.company_name}
+        reportContent={selectedLead.reason || ''}
+      />
+    )}
+    </>
+  );
+};
+
+export default MissionDetail;nClick={() => handleSendMessage(selectedLead.id)} disabled={isSending || isGeneratingMessage}>
               {isSending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : null}
