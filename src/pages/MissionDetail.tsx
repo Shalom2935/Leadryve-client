@@ -89,8 +89,9 @@ const MissionDetail = () => {
   const pollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    const handleResize = () => setIsMobile(window.innerWidth < 768); // Use md breakpoint
     window.addEventListener('resize', handleResize);
+    handleResize();
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -179,13 +180,13 @@ const MissionDetail = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) {
-        if (res.status === 404) return null; // Message doesn't exist
+        if (res.status === 404) return null;
         throw new Error('Failed to fetch message');
       }
       return await res.json();
     } catch (err) {
       toast.error("Failed to fetch message status.");
-      return { status: 'error' }; // Indicate error to stop polling
+      return { status: 'error' };
     }
   }, []);
 
@@ -308,17 +309,24 @@ const MissionDetail = () => {
   if (error) return <AppLayout><div className="p-8 text-center text-red-600">{error}</div></AppLayout>;
   if (!mission) return <AppLayout><div className="p-8 text-center">Aucune mission trouvée.</div></AppLayout>;
 
+  const renderLeadScore = (score: number) => {
+    let scoreClass = "bg-red-100 text-red-700";
+    if (score >= 80) scoreClass = "bg-green-100 text-green-700";
+    else if (score >= 50) scoreClass = "bg-yellow-100 text-yellow-700";
+    return <Badge className={scoreClass}>{score}</Badge>;
+  }
+
   return (
     <>
       <AppLayout>
         <div className="space-y-8">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-y-2">
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold tracking-tight">{mission.name}</h1>
-                <Badge className="bg-green-100 text-green-800">{mission.status}</Badge>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">{mission.name}</h1>
+                <Badge className="shrink-0 bg-green-100 text-green-800">{mission.status}</Badge>
               </div>
-              <p className="text-muted-foreground">Mission ID: {mission.id}</p>
+              <p className="mt-1 text-muted-foreground">Mission ID: {mission.id}</p>
             </div>
           </div>
 
@@ -327,55 +335,66 @@ const MissionDetail = () => {
               <CardHeader><CardTitle>Détails de la mission</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex flex-col gap-3">
-                  <div className="flex items-start gap-2"><MapPin size={18} className="text-leadryve-purple mt-0.5" /><div><p className="font-medium">Localisation</p><p className="text-sm">{mission.target_location}</p></div></div>
-                  <div className="flex items-start gap-2"><Target size={18} className="text-leadryve-purple mt-0.5" /><div><p className="font-medium">Secteur cible</p><p className="text-sm">{mission.target_sector}</p></div></div>
-                  <div className="flex items-start gap-2"><Users size={18} className="text-leadryve-purple mt-0.5" /><div><p className="font-medium">Leads Demandés</p><p className="text-sm">{mission.lead_count}</p></div></div>
-                  <div className="flex items-start gap-2"><Clock size={18} className="text-leadryve-purple mt-0.5" /><div><p className="font-medium">Progression</p><Progress value={mission.progress} className="h-2" /><p className="text-sm">{Math.floor(mission.progress)}% Terminée</p></div></div>
+                  <div className="flex items-start gap-3"><MapPin size={18} className="mt-1 shrink-0 text-leadryve-purple" /><div><p className="font-medium">Localisation</p><p className="text-sm text-muted-foreground">{mission.target_location}</p></div></div>
+                  <div className="flex items-start gap-3"><Target size={18} className="mt-1 shrink-0 text-leadryve-purple" /><div><p className="font-medium">Secteur cible</p><p className="text-sm text-muted-foreground">{mission.target_sector}</p></div></div>
+                  <div className="flex items-start gap-3"><Users size={18} className="mt-1 shrink-0 text-leadryve-purple" /><div><p className="font-medium">Leads Demandés</p><p className="text-sm text-muted-foreground">{mission.lead_count}</p></div></div>
+                  <div className="flex items-start gap-3"><Clock size={18} className="mt-1 shrink-0 text-leadryve-purple" /><div><p className="font-medium">Progression</p><Progress value={mission.progress} className="mt-1 h-2" /><p className="text-sm text-muted-foreground">{Math.floor(mission.progress)}% Terminée</p></div></div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-4">
               <h2 className="text-xl font-semibold">Leads</h2>
-              <div className="flex gap-2">
-                <div className="relative w-64"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" /><Input type="search" placeholder="Search leads..." className="pl-8" /></div>
-                <Button variant="outline"><Filter className="h-4 w-4 mr-1" /> Filter</Button>
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input type="search" placeholder="Search leads..." className="pl-8 w-full" />
+                </div>
+                <Button variant="outline" className="w-full sm:w-auto"><Filter className="h-4 w-4 mr-2" />Filter</Button>
               </div>
             </div>
             <Card>
               <CardContent className="p-0">
                 {isMobile ? (
-                  <div className="flex flex-col gap-4 p-4">
+                  <div className="flex flex-col divide-y">
                     {leads.map((lead) => (
-                      <Card key={lead.id}><CardContent className="p-4 space-y-2">
-                        <div className="font-bold text-lg">{lead.company_name}</div>
-                        <div className="text-sm text-slate-600">{lead.address}</div>
-                        <div><Badge className={lead.score >= 80 ? "bg-green-100 text-green-700" : lead.score >= 50 ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"}>{lead.score}</Badge></div>
-                        <div className="flex items-center gap-2"><Mail size={16} /> {lead.email || <span className="text-slate-400">—</span>}</div>
-                        <div className="flex items-center gap-2"><Phone size={16} /> {lead.phone || <span className="text-slate-400">—</span>}</div>
-                        <div>{lead.reason ? <Button variant="ghost" size="sm" onClick={() => openReportModal(lead)} className="bg-none text-purple-600 px-3 py-1 font-semibold hover:text-purple-400 transition">Afficher le rapport</Button> : <span className="text-slate-400">—</span>}</div>
-                        <div className="flex gap-2"><TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="outline" size="sm" onClick={() => openContactModal(lead)} disabled={lead.contact_status === 'sent' || !lead.email}>Contact</Button></TooltipTrigger>{(lead.contact_status === 'sent' || !lead.email) && <TooltipContent>{lead.contact_status === 'sent' ? <p>Message already sent.</p> : <p>No email available.</p>}</TooltipContent>}</Tooltip></TooltipProvider></div>
-                      </CardContent></Card>
+                      <div key={lead.id} className="p-4 space-y-3">
+                        <div className="flex justify-between items-start gap-4">
+                          <span className="font-bold text-lg">{lead.company_name}</span>
+                          {renderLeadScore(lead.score)}
+                        </div>
+                        <div className="text-sm text-muted-foreground">{lead.address}</div>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex items-center gap-2"><Mail size={16} className="shrink-0"/> <span className="truncate">{lead.email || '—'}</span></div>
+                          <div className="flex items-center gap-2"><Phone size={16} className="shrink-0"/> <span>{lead.phone || '—'}</span></div>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                          {lead.reason && <Button variant="link" size="sm" onClick={() => openReportModal(lead)} className="p-0 h-auto justify-start text-leadryve-purple">Afficher le rapport</Button>}
+                          <Button variant="outline" size="sm" onClick={() => openContactModal(lead)} disabled={lead.contact_status === 'sent' || !lead.email} className="w-full">Contact</Button>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
                     <Table>
-                      <TableHeader><TableRow><TableHead>Entreprise</TableHead><TableHead>Localisation</TableHead><TableHead>Score</TableHead><TableHead>Email</TableHead><TableHead>Téléphone</TableHead><TableHead>Rapport</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+                      <TableHeader><TableRow><TableHead>Entreprise</TableHead><TableHead>Localisation</TableHead><TableHead>Score</TableHead><TableHead>Contact</TableHead><TableHead>Rapport</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
                       <TableBody>
                         {leads.map((lead) => (
                           <TableRow key={lead.id}>
                             <TableCell className="font-medium">{lead.company_name}</TableCell>
-                            <TableCell>{lead.address}</TableCell>
-                            <TableCell><Badge className={lead.score >= 80 ? "bg-green-100 text-green-700" : lead.score >= 50 ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"}>{lead.score}</Badge></TableCell>
-                            <TableCell>{lead.email ? <span className="flex items-center gap-1"><Mail size={16} className="text-slate-600" />{lead.email}</span> : <span className="text-slate-400">—</span>}</TableCell>
-                            <TableCell>{lead.phone ? <span className="flex items-center gap-1"><Phone size={16} className="text-slate-600" />{lead.phone}</span> : <span className="text-slate-400">—</span>}</TableCell>
-                            <TableCell>{lead.reason ? <Button variant="ghost" size="sm" onClick={() => openReportModal(lead)} className="bg-none text-purple-600 px-3 py-1 font-semibold hover:text-purple-400 transition">Afficher le rapport</Button> : <span className="text-slate-400">—</span>}</TableCell>
+                            <TableCell className="text-muted-foreground">{lead.address}</TableCell>
+                            <TableCell>{renderLeadScore(lead.score)}</TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {lead.email && <div className="flex items-center gap-2"><Mail size={14} className="shrink-0"/> <span className="truncate">{lead.email}</span></div>}
+                              {lead.phone && <div className="flex items-center gap-2 mt-1"><Phone size={14} className="shrink-0"/> <span>{lead.phone}</span></div>}
+                            </TableCell>
+                            <TableCell>{lead.reason ? <Button variant="link" size="sm" onClick={() => openReportModal(lead)} className="p-0 h-auto text-leadryve-purple">Afficher le rapport</Button> : <span className="text-muted-foreground">—</span>}</TableCell>
                             <TableCell className="text-right"><div className="flex justify-end gap-2">
                               <TooltipProvider><Tooltip><TooltipTrigger asChild><Button variant="outline" size="sm" onClick={() => openContactModal(lead)} disabled={lead.contact_status === 'sent' || !lead.email}>Contact</Button></TooltipTrigger>{(lead.contact_status === 'sent' || !lead.email) && <TooltipContent>{lead.contact_status === 'sent' ? <p>Message already sent.</p> : <p>No email available.</p>}</TooltipContent>}</Tooltip></TooltipProvider>
-                              <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="sm"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem>View Details</DropdownMenuItem><DropdownMenuItem>Mark as Qualified</DropdownMenuItem><DropdownMenuItem className="text-red-600">Remove Lead</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
+                              <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem>View Details</DropdownMenuItem><DropdownMenuItem>Mark as Qualified</DropdownMenuItem><DropdownMenuItem className="text-red-600">Remove Lead</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
                             </div></TableCell>
                           </TableRow>
                         ))}
@@ -385,7 +404,7 @@ const MissionDetail = () => {
                 )}
               </CardContent>
             </Card>
-            <Pagination>
+            {totalPages > 1 && <Pagination className="pt-4">
               <PaginationContent>
                 <PaginationItem><PaginationPrevious onClick={() => handlePageChange(currentPage - 1)} /></PaginationItem>
                 {[...Array(totalPages)].map((_, i) => (
@@ -393,14 +412,14 @@ const MissionDetail = () => {
                 ))}
                 <PaginationItem><PaginationNext onClick={() => handlePageChange(currentPage + 1)} /></PaginationItem>
               </PaginationContent>
-            </Pagination>
+            </Pagination>}
           </div>
         </div>
       </AppLayout>
 
       {selectedLead && (
         <Dialog open={contactModalOpen} onOpenChange={handleModalOpenChange}>
-          <DialogContent className="sm:max-w-lg h-[90%] overflow-y-auto">
+          <DialogContent className="w-[95%] max-h-[90vh] overflow-y-auto sm:max-w-lg rounded-lg">
             <DialogHeader>
               <DialogTitle>Contacter {selectedLead.company_name}</DialogTitle>
               <DialogDescription>Envoyez un e-mail à {selectedLead.company_name}.</DialogDescription>
@@ -414,10 +433,10 @@ const MissionDetail = () => {
                 {isGeneratingMessage ? <div className="flex items-center justify-center rounded-md bg-gray-50 dark:bg-gray-900 min-h-[200px]"><MessageLoader /></div> : <Textarea id="message" value={message} onChange={(e) => setMessage(e.target.value)} rows={8} placeholder="Écrivez votre message ici..." />}
               </div>
             </div>
-            <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
-              <Button variant="outline" onClick={() => handleModalOpenChange(false)}>Cancel</Button>
-              <Button onClick={handleSaveDraft} disabled={isSavingDraft || isGeneratingMessage}>{isSavingDraft ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Save Draft</Button>
-              <Button type="submit" onClick={handleSendMessage} disabled={isSending || isGeneratingMessage}>{isSending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Sending...</> : 'Send Message'}</Button>
+            <DialogFooter className="flex flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-end">
+              <Button variant="outline" onClick={() => handleModalOpenChange(false)} className="w-full sm:w-auto">Cancel</Button>
+              <Button onClick={handleSaveDraft} disabled={isSavingDraft || isGeneratingMessage} className="w-full sm:w-auto">{isSavingDraft ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}Save Draft</Button>
+              <Button type="submit" onClick={handleSendMessage} disabled={isSending || isGeneratingMessage} className="w-full sm:w-auto">{isSending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Sending...</> : 'Send Message'}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
