@@ -64,6 +64,7 @@ const Settings = () => {
   const [smtpUser, setSmtpUser] = useState('');
   const [smtpPassword, setSmtpPassword] = useState('');
   const [smtpSenderEmail, setSmtpSenderEmail] = useState('');
+  const [isTestingSmtp, setIsTestingSmtp] = useState(false);
 
   useEffect(() => {
     const fetchSmtpConfig = async () => {
@@ -264,6 +265,7 @@ const Settings = () => {
       return;
     }
 
+    setIsTestingSmtp(true);
     try {
       const res = await fetch(`${API_BASE}/email/smtp/test`,
         {
@@ -282,6 +284,8 @@ const Settings = () => {
       toast.success('SMTP connection successful!');
     } catch (error: any) {
       toast.error(error.message);
+    } finally {
+      setIsTestingSmtp(false);
     }
   };
 
@@ -603,7 +607,16 @@ const Settings = () => {
                       <Button variant="destructive" onClick={handleDisconnectSmtp}>Déconnecter SMTP</Button>
                     ) : (
                       <>
-                        <Button variant="outline" onClick={handleTestSmtp}>Tester la connexion</Button>
+                        <Button variant="outline" onClick={handleTestSmtp} disabled={isTestingSmtp}>
+                          {isTestingSmtp ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Testing...
+                            </>
+                          ) : (
+                            "Tester la connexion"
+                          )}
+                        </Button>
                         <Button onClick={handleSaveSmtp}>Enregistrer</Button>
                       </>
                     )}
