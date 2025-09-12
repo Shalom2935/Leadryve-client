@@ -104,136 +104,95 @@ const MissionDetail = () => {
 
   useEffect(() => {
     const fetchMissionData = async () => {
-      setLoading(true);
+      setError('');
       try {
         const token = localStorage.getItem('token');
-        const missionRes = await fetch(`${API_BASE}/api/missions/${id}/`, {
+        const res = await fetch(`${API_BASE}/missions/${id}/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        if (!missionRes.ok) {
-          throw new Error('Failed to fetch mission data');
+        if (!res.ok) throw new Error('Erreur lors du chargement de la mission');
+        const data = await res.json();
+        
+        if (data.mission_completed === 1) {
+          data.status = 'completed';
+          data.progress = 100;
         }
-        const missionData = await missionRes.json();
-        setMission(missionData);
 
-        const leadsRes = await fetch(`${API_BASE}/api/missions/${id}/leads/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!leadsRes.ok) {
-          throw new Error('Failed to fetch leads');
-        }
-        const leadsData = await leadsRes.json();
-        setLeads(leadsData.items);
-        setTotalLeads(leadsData.count);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+        const parsed = missionSchema.safeParse(data);
+        if (!parsed.success) throw new Error('Format de mission invalide');
+        setMission(parsed.data);
+      } catch (e: any) {
+        setError(e.message || 'Erreur inconnue');
       }
     };
 
-    fetchMissionData();
-  }, [id]);
+    const fetchLeadsData = async (page: number, limit: number) => {
+      if (!id) return;
+      try {
+        const token = localStorage.getItem('token');
+        const skip = (page - 1) * limit;
+        const res = await fetch(`${API_BASE}/missions/${id}/leads/?skip=${skip}&limit=${limit}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!res.ok) throw new Error('Erreur lors du chargement des leads');
+        const data = await res.json();
+        const parsed = paginatedMissionLeadsSchema.safeParse(data);
+        if (!parsed.success) {
+          throw new Error('Format de données inattendu');
+        }
+        setLeads(parsed.data.items);
+        setTotalLeads(parsed.data.count);
+      } catch (e: any) {
+        // Optionally handle error
+      }
+    };
 
-  const fetchMessage = useCallback(async (leadId) => {
-    const token = localStorage.getItem('token');
-    try {
-      const res = await fetch(`${API_BASE}/messages/${leadId}/`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!res.ok) {
-        throw new Error('Failed to fetch message');
-      }
-      const data = await res.json();
-      if (data.status !== 'writing') {
-        setMessage(data.body);
-        setEmailSubject(data.subject);
-        setIsGeneratingMessage(false);
-        // Update the lead's status on the client-side
-        setLeads(prevLeads =>
-          prevLeads.map(l =>
-            l.id === leadId ? { ...l, contact_status: 'draft' } : l
-          )
-        );
-        return true; // Polling complete
-      }
-    } catch (err) {
-      toast.error("Failed to fetch message update.");
-      setIsGeneratingMessage(false);
-      return true; // Stop polling on error
+    const initialFetch = async () => {
+      setLoading(true);
+      await Promise.all([fetchMissionData(), fetchLeadsData(currentPage, leadsPerPage)]);
+      setLoading(false);
+    };
+
+    initialFetch();
+
+    let missionIntervalId: NodeJS.Timeout;
+    let leadsIntervalId: NodeJS.Timeout;
+
+    if (mission && mission.status !== 'completed') {
+      missionIntervalId = setInterval(fetchMissionData, 5000);
+      leadsIntervalId = setInterval(() => fetchLeadsData(currentPage, leadsPerPage), 5000);
     }
-    return false; // Polling continues
-  }, []);
 
-  const openContactModal = async (lead: any) => {
+    return () => {
+      if (missionIntervalId) clearInterval(missionIntervalId);
+      if (leadsIntervalId) clearInterval(leadsIntervalId);
+    };
+  }, [id, mission?.status, currentPage, leadsPerPage]);
+
+  const getScoreClass = (score: number) => {
+    if (score >= 80) return 'lead-score-high';
+    if (score >= 60) return 'lead-score-medium';
+    return 'lead-score-low';
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'in_progress':
+        return <Badge className="bg-blue-100 text-blue-800">In Progress</Badge>;
+      case 'completed':
+        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
+      default:
+        return <Badge variant="outline">Unknown</Badge>;
+    }
+  };
+
+  const openReportModal = (lead: any) => {
     setSelectedLead(lead);
-    setRecipientEmail(lead.email || '');
-    setContactModalOpen(true);
-  
-    // If message is already generated and in a final state
-    if ((lead.contact_status === 'draft' || lead.contact_status === 'sent') && lead.draft_message) {
-      setMessage(lead.draft_message);
-      setEmailSubject(`Proposition de valeur pour ${lead.company_name}`);
-      setIsGeneratingMessage(false);
-      return;
-    }
-  
-    setIsGeneratingMessage(true);
-    setMessage('');
-    setEmailSubject('');
-  
-    try {
-      const token = localStorage.getItem('token');
-      const res = await fetch(`${API_BASE}/messages/generate/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ lead_id: lead.id }),
-      });
-  
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.detail || "Failed to initiate message generation");
-      }
-  
-      const draft = await res.json();
-  
-      if (draft.status === 'writing') {
-        const pollInterval = setInterval(async () => {
-          const done = await fetchMessage(lead.id);
-          if (done) {
-            clearInterval(pollInterval);
-            clearTimeout(timeout); // Clear the timeout if polling is successful
-          }
-        }, 3000); // Poll every 3 seconds
-
-        const timeout = setTimeout(() => {
-          clearInterval(pollInterval);
-          toast.error("Message generation timed out. Please try again.");
-          setIsGeneratingMessage(false);
-        }, 120000); // 2 minutes timeout
-      } else {
-        setMessage(draft.body);
-        setEmailSubject(draft.subject);
-        setIsGeneratingMessage(false);
-        setLeads(prevLeads =>
-          prevLeads.map(l =>
-            l.id === lead.id ? { ...l, contact_status: 'draft', draft_message: draft.body } : l
-          )
-        );
-      }
-    } catch (err: any) {
-      toast.error(err.message || "An error occurred.");
-      setIsGeneratingMessage(false);
-    }
+    setReportModalOpen(true);
   };
 
   const handleSaveDraft = async () => {
