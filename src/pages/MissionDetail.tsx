@@ -674,32 +674,3 @@ const MissionDetail = () => {
 };
 
 export default MissionDetail;
-" onClick={() => setContactModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveDraft} disabled={isSavingDraft || isGeneratingMessage}>
-              {isSavingDraft ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-              Save Draft
-            </Button>
-            <Button type="submit" onClick={() => handleSendMessage(selectedLead.id)} disabled={isSending || isGeneratingMessage}>
-              {isSending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
-              {isSending ? 'Sending...' : 'Send Message'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    )}
-
-    {selectedLead && (
-      <ReportDialog
-        isOpen={reportModalOpen}
-        onClose={() => setReportModalOpen(false)}
-        companyName={selectedLead.company_name}
-        reportContent={selectedLead.reason || ''}
-      />
-    )}
-    </>
-  );
-};
-
-export default MissionDetail;
