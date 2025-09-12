@@ -162,7 +162,7 @@ const Settings = () => {
         return;
       }
 
-      const res = await fetch(`${API_BASE}/gmail/`, {
+      const res = await fetch(`${API_BASE}/email/gmail/`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
