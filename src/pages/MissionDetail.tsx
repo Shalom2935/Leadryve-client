@@ -173,6 +173,103 @@ const MissionDetail = () => {
     };
   }, [id, mission?.status, currentPage, leadsPerPage]);
 
+  const fetchMessage = useCallback(async (leadId) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${API_BASE}/messages/${leadId}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) {
+        throw new Error('Failed to fetch message');
+      }
+      const data = await res.json();
+      if (data.status !== 'writing') {
+        setMessage(data.body);
+        setEmailSubject(data.subject);
+        setIsGeneratingMessage(false);
+        // Update the lead's status on the client-side
+        setLeads(prevLeads =>
+          prevLeads.map(l =>
+            l.id === leadId ? { ...l, contact_status: 'draft' } : l
+          )
+        );
+        return true; // Polling complete
+      }
+    } catch (err) {
+      toast.error("Failed to fetch message update.");
+      setIsGeneratingMessage(false);
+      return true; // Stop polling on error
+    }
+    return false; // Polling continues
+  }, []);
+
+  const openContactModal = async (lead: any) => {
+    setSelectedLead(lead);
+    setRecipientEmail(lead.email || '');
+    setContactModalOpen(true);
+  
+    // If message is already generated and in a final state
+    if ((lead.contact_status === 'draft' || lead.contact_status === 'sent') && lead.draft_message) {
+      setMessage(lead.draft_message);
+      setEmailSubject(`Proposition de valeur pour ${lead.company_name}`);
+      setIsGeneratingMessage(false);
+      return;
+    }
+  
+    setIsGeneratingMessage(true);
+    setMessage('');
+    setEmailSubject('');
+  
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_BASE}/messages/generate/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ lead_id: lead.id }),
+      });
+  
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.detail || "Failed to initiate message generation");
+      }
+  
+      const draft = await res.json();
+  
+      if (draft.status === 'writing') {
+        const pollInterval = setInterval(async () => {
+          const done = await fetchMessage(lead.id);
+          if (done) {
+            clearInterval(pollInterval);
+            clearTimeout(timeout); // Clear the timeout if polling is successful
+          }
+        }, 3000); // Poll every 3 seconds
+
+        const timeout = setTimeout(() => {
+          clearInterval(pollInterval);
+          toast.error("Message generation timed out. Please try again.");
+          setIsGeneratingMessage(false);
+        }, 120000); // 2 minutes timeout
+      } else {
+        setMessage(draft.body);
+        setEmailSubject(draft.subject);
+        setIsGeneratingMessage(false);
+        setLeads(prevLeads =>
+          prevLeads.map(l =>
+            l.id === lead.id ? { ...l, contact_status: 'draft', draft_message: draft.body } : l
+          )
+        );
+      }
+    } catch (err: any) {
+      toast.error(err.message || "An error occurred.");
+      setIsGeneratingMessage(false);
+    }
+  };
+
   const getScoreClass = (score: number) => {
     if (score >= 80) return 'lead-score-high';
     if (score >= 60) return 'lead-score-medium';
@@ -456,37 +553,6 @@ const MissionDetail = () => {
                 )}
             </CardContent>
           </Card>
-          {totalLeads > leadsPerPage && (
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious 
-                    href="#" 
-                    onClick={() => handlePageChange(currentPage - 1)} 
-                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : undefined}
-                  />
-                </PaginationItem>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <PaginationItem key={page}>
-                    <PaginationLink 
-                      href="#" 
-                      isActive={page === currentPage} 
-                      onClick={() => handlePageChange(page)}
-                    >
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                ))}
-                <PaginationItem>
-                  <PaginationNext 
-                    href="#" 
-                    onClick={() => handlePageChange(currentPage + 1)} 
-                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : undefined}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          )}
         </div>
       </div>
     </AppLayout>
