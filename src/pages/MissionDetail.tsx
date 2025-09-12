@@ -273,7 +273,7 @@ const MissionDetail = () => {
         toast.error("Aucun fournisseur de messagerie connecté.");
         return;
       }
-      const sendEndpoint = `${API_BASE}/email/${profile.email_provider}/send/`;
+      const sendEndpoint = `${API_BASE}/email/send/`;
       await fetch(sendEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },

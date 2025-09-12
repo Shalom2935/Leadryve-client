@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { 
   Card, 
@@ -58,6 +58,39 @@ const Settings = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
+
+  const [smtpHost, setSmtpHost] = useState('');
+  const [smtpPort, setSmtpPort] = useState(587);
+  const [smtpUser, setSmtpUser] = useState('');
+  const [smtpPassword, setSmtpPassword] = useState('');
+  const [smtpSenderEmail, setSmtpSenderEmail] = useState('');
+
+  useEffect(() => {
+    const fetchSmtpConfig = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/email/smtp/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          setSmtpHost(data.host);
+          setSmtpPort(data.port);
+          setSmtpUser(data.username);
+          setSmtpSenderEmail(data.sender_email);
+        }
+      } catch (error) {
+        console.error('Failed to fetch SMTP config', error);
+      }
+    };
+
+    fetchSmtpConfig();
+  }, []);
 
   const handleToggleChange = (key: string) => {
     setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -186,6 +219,101 @@ const Settings = () => {
       toast.error("Une erreur inattendue est survenue. Veuillez réessayer.");
     } finally {
       setIsDisconnecting(false);
+    }
+  };
+
+  const handleSaveSmtp = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      toast.error("No authentication token found. Please log in again.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/email/smtp/`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          host: smtpHost,
+          port: smtpPort,
+          username: smtpUser,
+          password: smtpPassword,
+          sender_email: smtpSenderEmail,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.detail || 'Failed to save SMTP settings');
+      }
+
+      toast.success('SMTP settings saved successfully!');
+      refetchProfile();
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleTestSmtp = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      toast.error("No authentication token found. Please log in again.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/email/smtp/test`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.detail || 'Failed to test SMTP connection');
+      }
+
+      toast.success('SMTP connection successful!');
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleDisconnectSmtp = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      toast.error("No authentication token found. Please log in again.");
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/email/smtp/`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.detail || 'Failed to disconnect SMTP');
+      }
+
+      toast.success('SMTP disconnected successfully!');
+      setSmtpHost('');
+      setSmtpPort(587);
+      setSmtpUser('');
+      setSmtpPassword('');
+      setSmtpSenderEmail('');
+      refetchProfile();
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -367,7 +495,7 @@ const Settings = () => {
                       <Button
                         variant="outline"
                         onClick={() => window.location.href = `${API_BASE}/email/gmail/auth/login`}
-                        disabled={profile?.email_provider === 'microsoft'}
+                        disabled={profile?.email_provider === 'microsoft' || profile?.email_provider === 'smtp'}
                         className="w-full"
                       >
                         <Plus className="mr-2 h-4 w-4" />
@@ -412,7 +540,7 @@ const Settings = () => {
                       <Button
                         variant="outline"
                         onClick={() => window.location.href = `${API_BASE}/email/microsoft/auth/login`}
-                        disabled={profile?.email_provider === 'gmail'}
+                        disabled={profile?.email_provider === 'gmail' || profile?.email_provider === 'smtp'}
                         className="w-full"
                       >
                         <Plus className="mr-2 h-4 w-4" />
@@ -449,26 +577,36 @@ const Settings = () => {
                   <CardContent className="pt-0 space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="smtp-host">Hôte</Label>
-                      <Input id="smtp-host" placeholder="smtp.example.com" />
+                      <Input id="smtp-host" placeholder="smtp.example.com" value={smtpHost} onChange={(e) => setSmtpHost(e.target.value)} />
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="smtp-port">Port</Label>
-                        <Input id="smtp-port" placeholder="587" />
+                        <Input id="smtp-port" placeholder="587" value={smtpPort} onChange={(e) => setSmtpPort(parseInt(e.target.value))}/>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="smtp-user">Utilisateur</Label>
-                        <Input id="smtp-user" placeholder="user@example.com" />
+                        <Input id="smtp-user" placeholder="user@example.com" value={smtpUser} onChange={(e) => setSmtpUser(e.target.value)} />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="smtp-password">Mot de passe</Label>
-                      <Input id="smtp-password" type="password" placeholder="••••••••" />
+                      <Input id="smtp-password" type="password" placeholder="••••••••" value={smtpPassword} onChange={(e) => setSmtpPassword(e.target.value)} />
+                    </div>
+                     <div className="space-y-2">
+                      <Label htmlFor="smtp-sender-email">Sender Email</Label>
+                      <Input id="smtp-sender-email" placeholder="sender@example.com" value={smtpSenderEmail} onChange={(e) => setSmtpSenderEmail(e.target.value)} />
                     </div>
                   </CardContent>
                   <CardFooter className="gap-2">
-                    <Button variant="outline">Tester la connexion</Button>
-                    <Button>Enregistrer</Button>
+                    {profile?.email_provider === 'smtp' ? (
+                      <Button variant="destructive" onClick={handleDisconnectSmtp}>Déconnecter SMTP</Button>
+                    ) : (
+                      <>
+                        <Button variant="outline" onClick={handleTestSmtp}>Tester la connexion</Button>
+                        <Button onClick={handleSaveSmtp}>Enregistrer</Button>
+                      </>
+                    )}
                   </CardFooter>
                 </CollapsibleContent>
               </Card>
