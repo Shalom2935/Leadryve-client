@@ -362,15 +362,15 @@ const MissionDetail = () => {
                     {leads.map((lead) => (
                       <div key={lead.id} className="p-4 space-y-3">
                         <div className="flex justify-between items-start gap-4">
-                          <span className="font-bold text-lg">{lead.company_name}</span>
+                          <span className="font-bold text-lg break-words">{lead.company_name}</span>
                           {renderLeadScore(lead.score)}
                         </div>
-                        <div className="text-sm text-muted-foreground">{lead.address}</div>
+                        <div className="text-sm text-muted-foreground break-words">{lead.address}</div>
                         <div className="space-y-2 text-sm">
                           <div className="flex items-center gap-2"><Mail size={16} className="shrink-0"/> <span className="truncate">{lead.email || '—'}</span></div>
                           <div className="flex items-center gap-2"><Phone size={16} className="shrink-0"/> <span>{lead.phone || '—'}</span></div>
                         </div>
-                        <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                        <div className="flex flex-col gap-2 pt-2">
                           {lead.reason && <Button variant="link" size="sm" onClick={() => openReportModal(lead)} className="p-0 h-auto justify-start text-leadryve-purple">Afficher le rapport</Button>}
                           <Button variant="outline" size="sm" onClick={() => openContactModal(lead)} disabled={lead.contact_status === 'sent' || !lead.email} className="w-full">Contact</Button>
                         </div>
