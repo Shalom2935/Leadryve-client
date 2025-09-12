@@ -251,7 +251,7 @@ const MissionDetail = () => {
       await fetch(`${API_BASE}/messages/${selectedLead.id}/`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ body: message, subject: emailSubject }),
+        body: JSON.stringify({ body: message, subject: emailSubject, lead_id: selectedLead.id }),
       });
       setLeads(prev => prev.map(l => l.id === selectedLead.id ? { ...l, draft_message: message, contact_status: 'draft' } : l));
       toast.success("Draft saved successfully!");
