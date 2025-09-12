@@ -118,9 +118,10 @@ const MissionDetail = () => {
         setMessage(data.body);
         setEmailSubject(data.subject);
         setIsGeneratingMessage(false);
+        // Update the lead's status on the client-side
         setLeads(prevLeads =>
           prevLeads.map(l =>
-            l.id === leadId ? { ...l, contact_status: 'draft', draft_message: data.body } : l
+            l.id === leadId ? { ...l, contact_status: 'draft' } : l
           )
         );
         return true; // Polling complete
@@ -173,8 +174,15 @@ const MissionDetail = () => {
           const done = await fetchMessage(lead.id);
           if (done) {
             clearInterval(pollInterval);
+            clearTimeout(timeout); // Clear the timeout if polling is successful
           }
         }, 3000); // Poll every 3 seconds
+
+        const timeout = setTimeout(() => {
+          clearInterval(pollInterval);
+          toast.error("Message generation timed out. Please try again.");
+          setIsGeneratingMessage(false);
+        }, 120000); // 2 minutes timeout
       } else {
         setMessage(draft.body);
         setEmailSubject(draft.subject);
@@ -212,111 +220,13 @@ const MissionDetail = () => {
         throw new Error('Failed to save draft');
       }
 
-      const updatedDraft = await res.json();
-      setLeads(prevLeads =>
-        prevLeads.map(l =>
-          l.id === selectedLead.id ? { ...l, contact_status: 'draft', draft_message: updatedDraft.body } : l
-        )
-      );
+      // No need to update the leads here, as the status is already 'draft'
       toast.success('Draft saved successfully!');
     } catch (err) {
       toast.error('Failed to save draft.');
     } finally {
       setIsSavingDraft(false);
     }
-  };
-
-  useEffect(() => {
-    const fetchMissionData = async () => {
-      setError('');
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`${API_BASE}/missions/${id}/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) throw new Error('Erreur lors du chargement de la mission');
-        const data = await res.json();
-        
-        if (data.mission_completed === 1) {
-          data.status = 'completed';
-          data.progress = 100;
-        }
-
-        const parsed = missionSchema.safeParse(data);
-        if (!parsed.success) throw new Error('Format de mission invalide');
-        setMission(parsed.data);
-      } catch (e: any) {
-        setError(e.message || 'Erreur inconnue');
-      }
-    };
-
-    const fetchLeadsData = async (page: number, limit: number) => {
-      if (!id) return;
-      try {
-        const token = localStorage.getItem('token');
-        const skip = (page - 1) * limit;
-        const res = await fetch(`${API_BASE}/missions/${id}/leads/?skip=${skip}&limit=${limit}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) throw new Error('Erreur lors du chargement des leads');
-        const data = await res.json();
-        const parsed = paginatedMissionLeadsSchema.safeParse(data);
-        if (!parsed.success) {
-          throw new Error('Format de données inattendu');
-        }
-        setLeads(parsed.data.items);
-        setTotalLeads(parsed.data.count);
-      } catch (e: any) {
-        // Optionally handle error
-      }
-    };
-
-    const initialFetch = async () => {
-      setLoading(true);
-      await Promise.all([fetchMissionData(), fetchLeadsData(currentPage, leadsPerPage)]);
-      setLoading(false);
-    };
-
-    initialFetch();
-
-    let missionIntervalId: NodeJS.Timeout;
-    let leadsIntervalId: NodeJS.Timeout;
-
-    if (mission && mission.status !== 'completed') {
-      missionIntervalId = setInterval(fetchMissionData, 5000);
-      leadsIntervalId = setInterval(() => fetchLeadsData(currentPage, leadsPerPage), 5000);
-    }
-
-    return () => {
-      if (missionIntervalId) clearInterval(missionIntervalId);
-      if (leadsIntervalId) clearInterval(leadsIntervalId);
-    };
-  }, [id, mission?.status, currentPage, leadsPerPage]);
-
-  const getScoreClass = (score: number) => {
-    if (score >= 80) return 'lead-score-high';
-    if (score >= 60) return 'lead-score-medium';
-    return 'lead-score-low';
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'in_progress':
-        return <Badge className="bg-blue-100 text-blue-800">In Progress</Badge>;
-      case 'completed':
-        return <Badge className="bg-green-100 text-green-800">Completed</Badge>;
-      default:
-        return <Badge variant="outline">Unknown</Badge>;
-    }
-  };
-
-  const openReportModal = (lead: any) => {
-    setSelectedLead(lead);
-    setReportModalOpen(true);
   };
 
   const handleSendMessage = async (leadId) => {
@@ -368,9 +278,10 @@ const MissionDetail = () => {
       setMessage('');
       setRecipientEmail('');
       setEmailSubject('');
+      // Update the lead's status on the client-side
       setLeads(prevLeads => 
         prevLeads.map(l => 
-          l.id === leadId ? { ...l, contact_status: 'sent', draft_message: message } : l
+          l.id === leadId ? { ...l, contact_status: 'sent' } : l
         )
       );
 
@@ -735,6 +646,35 @@ const MissionDetail = () => {
           </div>
           <DialogFooter className="flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2">
             <Button variant="outline" onClick={() => setContactModalOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveDraft} disabled={isSavingDraft || isGeneratingMessage}>
+              {isSavingDraft ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+              Save Draft
+            </Button>
+            <Button type="submit" onClick={() => handleSendMessage(selectedLead.id)} disabled={isSending || isGeneratingMessage}>
+              {isSending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              {isSending ? 'Sending...' : 'Send Message'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    )}
+
+    {selectedLead && (
+      <ReportDialog
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        companyName={selectedLead.company_name}
+        reportContent={selectedLead.reason || ''}
+      />
+    )}
+    </>
+  );
+};
+
+export default MissionDetail;
+" onClick={() => setContactModalOpen(false)}>Cancel</Button>
             <Button onClick={handleSaveDraft} disabled={isSavingDraft || isGeneratingMessage}>
               {isSavingDraft ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
               Save Draft
