@@ -102,6 +102,43 @@ const MissionDetail = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  useEffect(() => {
+    const fetchMissionData = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const missionRes = await fetch(`${API_BASE}/api/missions/${id}/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!missionRes.ok) {
+          throw new Error('Failed to fetch mission data');
+        }
+        const missionData = await missionRes.json();
+        setMission(missionData);
+
+        const leadsRes = await fetch(`${API_BASE}/api/missions/${id}/leads/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (!leadsRes.ok) {
+          throw new Error('Failed to fetch leads');
+        }
+        const leadsData = await leadsRes.json();
+        setLeads(leadsData.items);
+        setTotalLeads(leadsData.count);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMissionData();
+  }, [id]);
+
   const fetchMessage = useCallback(async (leadId) => {
     const token = localStorage.getItem('token');
     try {
