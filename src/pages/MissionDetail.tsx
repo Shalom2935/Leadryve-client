@@ -368,7 +368,17 @@ const MissionDetail = () => {
                         <div className="text-sm text-muted-foreground break-words">{lead.address}</div>
                         <div className="space-y-2 text-sm">
                           <div className="flex items-center gap-2"><Mail size={16} className="shrink-0"/> <span className="truncate">{lead.email || '—'}</span></div>
-                          <div className="flex items-center gap-2"><Phone size={16} className="shrink-0"/> <span>{lead.phone || '—'}</span></div>
+                                                    <div className="flex items-start gap-2"><Phone size={16} className="shrink-0 mt-1"/> 
+                            <div>
+                              {Array.isArray(lead.phone) && lead.phone.length > 0 ? (
+                                lead.phone.slice(0, 3).map((p, index) => (
+                                  <div key={index}>{p}</div>
+                                ))
+                              ) : (
+                                <span>—</span>
+                              )}
+                            </div>
+                          </div>
                         </div>
                         <div className="flex flex-col gap-2 pt-2">
                           {lead.reason && <Button variant="link" size="sm" onClick={() => openReportModal(lead)} className="p-0 h-auto justify-start text-leadryve-purple">Afficher le rapport</Button>}
