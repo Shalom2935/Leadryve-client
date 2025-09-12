@@ -41,10 +41,7 @@ const AppRoutes = () => {
     initializeAuth();
   }, [initializeAuth]);
 
-  const isAppSubdomain = window.location.hostname.startsWith("app.") || (
-    (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
-    window.location.search.includes('mode=app')
-  );
+  const isAppSubdomain = window.location.hostname.startsWith("app.") || window.location.search.includes('mode=app');
 
   useEffect(() => {
     if (isAppSubdomain && location.pathname === "/") {

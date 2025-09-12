@@ -17,15 +17,19 @@ import {
   TabsList, 
   TabsTrigger 
 } from '@/components/ui/tabs';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Progress } from '@/components/ui/progress';
 import { 
   Badge, 
   Bell, 
   CreditCard, 
+  ChevronDown,
   Download, 
   Mail, 
+  Plus, 
   Shield, 
   UserCircle,
+  X,
   Loader2 // Import Loader2
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
@@ -326,81 +330,149 @@ const Settings = () => {
                   Connectez des services tiers à votre compte Leadryve
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <Mail className="h-6 w-6 text-leadryve-purple" />
-                    <div>
-                      <p className="font-medium">Gmail Integration</p>
-                      <p className="text-sm text-muted-foreground">
-                        Connectez votre compte Gmail pour envoyer des e-mails.
-                      </p>
+              <CardContent className="grid gap-6 sm:grid-cols-2">
+                <Card className="flex flex-col bg-slate-50 border shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+                  <CardHeader className="flex-1">
+                    <div className="flex items-center gap-4">
+                      <img src="/google.png" alt="Google logo" className="h-8 w-8" />
+                      <div>
+                        <p className="font-medium">Intégration Gmail</p>
+                        <p className="text-sm text-muted-foreground">
+                          Connectez votre compte Gmail pour envoyer des e-mails.
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  {profile?.email_provider === 'gmail' ? (
-                    <Button 
-                      variant="destructive" 
-                      onClick={handleDisconnectGmail} 
-                      disabled={isDisconnecting}
-                    >
-                      {isDisconnecting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Déconnexion...
-                        </>
-                      ) : (
-                        "Déconnecter Gmail"
-                      )}
-                    </Button>
-                  ) : (
-                    <Button 
-                      variant="outline" 
-                      onClick={() => window.location.href = `${API_BASE}/email/gmail/auth/login`}
-                      disabled={profile?.email_provider === 'microsoft'} // Disable if Microsoft is connected
-                    >
-                      Connecter Gmail
-                    </Button>
-                  )}
-                </div>
-
-                {/* Microsoft Integration Card */}
-                <div className="flex items-center justify-between mt-4"> {/* Added margin-top for spacing */}
-                  <div className="flex items-center gap-4">
-                    <Mail className="h-6 w-6 text-blue-500" /> {/* Mail icon with blue color for Microsoft */}
-                    <div>
-                      <p className="font-medium">Microsoft Integration</p>
-                      <p className="text-sm text-muted-foreground">
-                        Connectez votre compte Microsoft pour envoyer des e-mails.
-                      </p>
+                  </CardHeader>
+                  <CardFooter>
+                    {profile?.email_provider === 'gmail' ? (
+                      <Button
+                        variant="destructive"
+                        onClick={handleDisconnectGmail}
+                        disabled={isDisconnecting}
+                        className="w-full transition-all duration-300"
+                      >
+                        {isDisconnecting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Déconnexion...
+                          </>
+                        ) : (
+                          <>
+                            <X className="mr-2 h-4 w-4" />
+                            Déconnecter Gmail
+                          </>
+                        )}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        onClick={() => window.location.href = `${API_BASE}/email/gmail/auth/login`}
+                        disabled={profile?.email_provider === 'microsoft'}
+                        className="w-full"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Connecter avec Gmail
+                      </Button>
+                    )}
+                  </CardFooter>
+                </Card>
+                <Card className="flex flex-col bg-slate-50 border shadow-sm transition-all duration-300 hover:shadow-md hover:-translate-y-1">
+                  <CardHeader className="flex-1">
+                    <div className="flex items-center gap-4">
+                      <img src="/microsoft.png" alt="Microsoft logo" className="h-8 w-8" />
+                      <div>
+                        <p className="font-medium">Intégration Microsoft</p>
+                        <p className="text-sm text-muted-foreground">
+                          Connectez votre compte Microsoft pour envoyer des e-mails.
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  {profile?.email_provider === 'microsoft' ? (
-                    <Button 
-                      variant="destructive" 
-                      onClick={handleDisconnectMicrosoft} 
-                      disabled={isDisconnecting}
-                    >
-                      {isDisconnecting ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Déconnexion...
-                        </>
-                      ) : (
-                        "Déconnecter Microsoft"
-                      )}
-                    </Button>
-                  ) : (
-                    <Button 
-                      variant="outline" 
-                      onClick={() => window.location.href = `${API_BASE}/email/microsoft/auth/login`}
-                      disabled={profile?.email_provider === 'gmail'} // Disable if Gmail is connected
-                    >
-                      Connecter Microsoft
-                    </Button>
-                  )}
-                </div>
+                  </CardHeader>
+                  <CardFooter>
+                    {profile?.email_provider === 'microsoft' ? (
+                      <Button
+                        variant="destructive"
+                        onClick={handleDisconnectMicrosoft}
+                        disabled={isDisconnecting}
+                        className="w-full transition-all duration-300"
+                      >
+                        {isDisconnecting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Déconnexion...
+                          </>
+                        ) : (
+                          <>
+                            <X className="mr-2 h-4 w-4" />
+                            Déconnecter Microsoft
+                          </>
+                        )}
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        onClick={() => window.location.href = `${API_BASE}/email/microsoft/auth/login`}
+                        disabled={profile?.email_provider === 'gmail'}
+                        className="w-full"
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Connecter avec Microsoft
+                      </Button>
+                    )}
+                  </CardFooter>
+                </Card>
               </CardContent>
             </Card>
+
+            <Collapsible asChild>
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <Mail className="h-8 w-8" />
+                      <div>
+                        <p className="font-medium">Intégration SMTP</p>
+                        <p className="text-sm text-muted-foreground">
+                          Connectez votre propre serveur SMTP pour envoyer des e-mails.
+                        </p>
+                      </div>
+                    </div>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" size="icon">
+                        <ChevronDown className="h-4 w-4" />
+                        <span className="sr-only">Toggle</span>
+                      </Button>
+                    </CollapsibleTrigger>
+                  </div>
+                </CardHeader>
+                <CollapsibleContent>
+                  <CardContent className="pt-0 space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="smtp-host">Hôte</Label>
+                      <Input id="smtp-host" placeholder="smtp.example.com" />
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="smtp-port">Port</Label>
+                        <Input id="smtp-port" placeholder="587" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="smtp-user">Utilisateur</Label>
+                        <Input id="smtp-user" placeholder="user@example.com" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="smtp-password">Mot de passe</Label>
+                      <Input id="smtp-password" type="password" placeholder="••••••••" />
+                    </div>
+                  </CardContent>
+                  <CardFooter className="gap-2">
+                    <Button variant="outline">Tester la connexion</Button>
+                    <Button>Enregistrer</Button>
+                  </CardFooter>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
           </TabsContent>
           
           {/* <TabsContent value="plan" className="space-y-4 mt-6">
