@@ -197,7 +197,7 @@ const Settings = () => {
         return;
       }
 
-      const res = await fetch(`${API_BASE}/microsoft/`, {
+      const res = await fetch(`${API_BASE}/email/microsoft/`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
