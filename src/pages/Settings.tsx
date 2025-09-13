@@ -267,15 +267,20 @@ const Settings = () => {
 
     setIsTestingSmtp(true);
     try {
-      const res = await fetch(`${API_BASE}/email/smtp/test`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      const res = await fetch(`${API_BASE}/email/smtp/test`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          host: smtpHost,
+          port: smtpPort,
+          username: smtpUser,
+          password: smtpPassword, // Sending password for test only
+          sender_email: smtpSenderEmail,
+        }),
+      });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.detail || 'Failed to test SMTP connection');
@@ -603,22 +608,21 @@ const Settings = () => {
                     </div>
                   </CardContent>
                   <CardFooter className="gap-2">
-                    {profile?.email_provider === 'smtp' ? (
-                      <Button variant="destructive" onClick={handleDisconnectSmtp}>Déconnecter SMTP</Button>
-                    ) : (
-                      <>
-                        <Button variant="outline" onClick={handleTestSmtp} disabled={isTestingSmtp}>
-                          {isTestingSmtp ? (
-                            <>
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              Testing...
-                            </>
-                          ) : (
-                            "Tester la connexion"
-                          )}
-                        </Button>
-                        <Button onClick={handleSaveSmtp}>Enregistrer</Button>
-                      </>
+                    <Button variant="outline" onClick={handleTestSmtp} disabled={isTestingSmtp}>
+                      {isTestingSmtp ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Test en cours...
+                        </>
+                      ) : (
+                        "Tester la connexion"
+                      )}
+                    </Button>
+                    <Button onClick={handleSaveSmtp}>
+                      {profile?.email_provider === 'smtp' ? 'Mettre à jour' : 'Enregistrer'}
+                    </Button>
+                    {profile?.email_provider === 'smtp' && (
+                      <Button variant="destructive" onClick={handleDisconnectSmtp}>Déconnecter</Button>
                     )}
                   </CardFooter>
                 </CollapsibleContent>
