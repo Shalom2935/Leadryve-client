@@ -29,7 +29,7 @@ interface Profile {
     x?: string;
   };
   pitch?: string;
-  email_provider?: 'gmail' | 'microsoft' | null; // Updated field
+  email_provider?: 'gmail' | 'microsoft' | 'smtp' | null; // Updated field
 }
 
 interface AuthState {
