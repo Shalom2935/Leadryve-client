@@ -274,21 +274,27 @@ const MissionDetail = () => {
         return;
       }
       const sendEndpoint = `${API_BASE}/email/send/`;
-      await fetch(sendEndpoint, {
+      const response = await fetch(sendEndpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
-          lead_id: selectedLead.id,
+          lead_id: parseInt(selectedLead.id, 10),
           to: recipientEmail,
           subject: emailSubject,
           body: message,
         }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: response.statusText }));
+        throw new Error(errorData.detail || "Failed to send message.");
+      }
+
       setLeads(prev => prev.map(l => l.id === selectedLead.id ? { ...l, contact_status: 'sent' } : l));
       toast.success("Message sent successfully!");
       handleModalOpenChange(false);
-    } catch (err) {
-      toast.error("Failed to send message.");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send message.");
     } finally {
       setIsSending(false);
     }
