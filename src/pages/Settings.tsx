@@ -267,9 +267,8 @@ const Settings = () => {
 
     setIsTestingSmtp(true);
     try {
-      const res = await fetch(`${API_BASE}/email/smtp/test`, {
-        meth
-        od: 'POST',
+      const res = await fetch(`${API_BASE}/email/smtp/test`, { 
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
