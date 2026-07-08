@@ -19,8 +19,6 @@ Backend repository: https://github.com/Shalom2935/Leadryve-api
 - [API Integration](#api-integration)
 - [Testing](#testing)
 - [Local Development](#local-development)
-- [Engineering Highlights](#engineering-highlights)
-- [Future Improvements](#future-improvements)
 
 ---
 
